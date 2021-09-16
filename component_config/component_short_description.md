@@ -1,1 +1,1 @@
-Testing functional sample extractor for purposes of the python component template. 
+Download email content (body) and metadata using IMAP protocol.
