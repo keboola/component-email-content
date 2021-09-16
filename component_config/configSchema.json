@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "title": "extractor configuration",
+  "required": [
+    "user_name",
+    "#password",
+    "host",
+    "port"
+  ],
+  "properties": {
+    "user_name": {
+      "type": "string",
+      "title": "User Name",
+      "propertyOrder": 100
+    },
+    "#password": {
+      "type": "string",
+      "title": "Password",
+      "propertyOrder": 200
+    },
+    "host": {
+      "type": "string",
+      "title": "IMAP Host",
+      "propertyOrder": 300
+    },
+    "port": {
+      "type": "number",
+      "title": "IMAP Port",
+      "default": 993,
+      "propertyOrder": 400
+    },
+    "query": {
+      "type": "string",
+      "title": "Search query",
+      "default": "ALL",
+      "propertyOrder": 500
+    }
+  }
+}
