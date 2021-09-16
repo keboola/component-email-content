@@ -16,6 +16,7 @@
     "#password": {
       "type": "string",
       "title": "Password",
+      "format": "password",
       "propertyOrder": 200
     },
     "host": {
@@ -32,6 +33,7 @@
     "query": {
       "type": "string",
       "title": "Search query",
+      "description": "Search query, e.g. (FROM \"email\" SUBJECT \"the subject\" UNSEEN) . Find more information on the syntax in the documentation.",
       "default": "ALL",
       "propertyOrder": 500
     }

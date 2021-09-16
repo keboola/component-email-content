@@ -26,8 +26,13 @@ Get the API token, register application, etc.
 
 # Configuration
 
+### query
 
-example:
+Query string to filter emails. E.g. `(FROM "email" SUBJECT "the subject" UNSEEN)`
+
+More information on keywords [here](docs/imap-search.md)
+
+## Example:
 
 ```
 {
@@ -35,7 +40,7 @@ example:
     "user_name": "example@gmail.com",
     "host": "imap.gmail.com",
     "port": 993,
-    "query":"FROM "email" SUBJECT "some text")', 'UNSEEN'"
+    "query":"(FROM "email" SUBJECT "the subject" UNSEEN)"
   }
 ```
 
