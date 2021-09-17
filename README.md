@@ -13,7 +13,10 @@ Extract email body and other metadata using IMAP protocol.
 # Prerequisites
 
 
-Get the API token, register application, etc.
+Have IMAP service enabled on your Email account. Please refer to your email provider for more information.
+
+Note that for GMAIL you will need to enable access for the ["less secure" apps](https://support.google.com/accounts/answer/6010255?hl=en). 
+ 
 
 # Features
 
