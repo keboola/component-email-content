@@ -34,7 +34,7 @@
     "attachment_pattern": {
       "type": "string",
       "title": "Attachment Pattern",
-      "description": "Regex pattern to filter particular attachments. e.g. to retrieve only pdf file types use: .+\\.pdf",
+      "description": "Regex pattern to filter particular attachments. e.g. to retrieve only pdf file types use: .+\\.pdf If left empty, all attachments are downloaded.",
       "default": ".+\\.csv",
       "options": {
         "dependencies": {
