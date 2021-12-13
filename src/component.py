@@ -106,8 +106,9 @@ class Component(ComponentBase):
         logging.info(f"{len(attachments)} attachments matching the pattern found.")
         results = []
         for a in attachments:
-            file_def = self.create_out_file_definition(a.filename, tags=[f'email_pk: {self._build_email_pk(msg)}',
-                                                                         f'email_date: {msg.date_str}'])
+            email_pk = self._build_email_pk(msg)
+            file_def = self.create_out_file_definition(f"{email_pk}_{a.filename}", tags=[f'email_pk: {email_pk}',
+                                                                                         f'email_date: {msg.date_str}'])
             with open(file_def.full_path, 'wb') as out_file:
                 out_file.write(a.payload)
             results.append(file_def)
