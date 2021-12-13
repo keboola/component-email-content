@@ -1,1 +1,44 @@
-{}
+{
+  "type": "object",
+  "title": "extractor configuration",
+  "required": [
+    "query"
+  ],
+  "properties": {
+    "query": {
+      "type": "string",
+      "title": "Search query",
+      "description": "Select only emails matching the search query, e.g. (FROM \"email\" SUBJECT \"the subject\" UNSEEN) . Find more information on the syntax in the documentation.",
+      "default": "ALL",
+      "propertyOrder": 100
+    },
+    "download_content": {
+      "type": "boolean",
+      "format": "checkbox",
+      "title": "Download Content",
+      "description": "When set to true, the content of the message will be downloaded.",
+      "default": true,
+      "propertyOrder": 200
+    },
+    "download_attachments": {
+      "type": "boolean",
+      "format": "checkbox",
+      "title": "Download Attachments",
+      "description": "When set to true, also the attachments will be downloaded. By default into the File Storage. Use processors to control the behaviour.",
+      "default": false,
+      "propertyOrder": 300
+    },
+    "attachment_pattern": {
+      "type": "string",
+      "title": "Attachment Pattern",
+      "description": "Regex pattern to filter particular attachments. e.g. to retrieve only pdf file types use: .+\\.pdf",
+      "default": ".+\\.csv",
+      "options": {
+        "dependencies": {
+          "download_attachments": true
+        }
+      },
+      "propertyOrder": 400
+    }
+  }
+}
