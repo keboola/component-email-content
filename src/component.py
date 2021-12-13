@@ -6,7 +6,7 @@ import logging
 import re
 from typing import List
 
-from imap_tools import MailBox, MailMessage
+from imap_tools import MailBox, MailMessage, MailboxLoginError
 from keboola.component.base import ComponentBase
 from keboola.component.dao import FileDefinition
 from keboola.component.exceptions import UserException
@@ -80,6 +80,10 @@ class Component(ComponentBase):
         params = self.configuration.parameters
         try:
             self._imap_client.login(username=params[KEY_USER], password=params[KEY_PASSWORD])
+        except MailboxLoginError as e:
+            raise UserException(
+                f"Failed to login, please check your credentials and connection settings. \nDetails: "
+                f"{e}") from e
         except imaplib.IMAP4.error as e:
             raise UserException(
                 f"Failed to login, please check your credentials and connection settings. \nDetails: "
