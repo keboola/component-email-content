@@ -2,7 +2,10 @@
   "type": "object",
   "title": "extractor configuration",
   "required": [
-    "query"
+    "query",
+    "download_content",
+    "download_attachments"
+
   ],
   "properties": {
     "query": {
