@@ -18,16 +18,30 @@ Have IMAP service enabled on your Email account. Please refer to your email prov
 Note that for GMAIL you will need to enable access for the ["less secure" apps](https://support.google.com/accounts/answer/6010255?hl=en). 
  
 
-# Features
+# KBC Features
 
 
 | **Feature**             | **Note**                                      |
 |-------------------------|-----------------------------------------------|
 | Generic UI form         | Dynamic UI form |             
+| Row based configuration         | Dynamic UI form |             
 | Incremental loading     | Allows fetching data in new increments.       |
 
 
 # Configuration
+
+## Supported parameters:
+
+ - `#password` --  login
+ - `user_name` -- login
+ - `host` -- IMAP HOST
+ - `query` -- Query string to filter emails. E.g. `(FROM "email" SUBJECT "the subject" UNSEEN)`, More information on keywords [here](docs/imap-search.md)
+ - `download_content` -- (boolean) if true, content of the email will be downloaded into the `out/tables/emails.csv` table
+ - `download_attachments` -- (boolean) if true, attachments of the email will be downloaded into `out/files/` folder, prefixed by generated email `pk`.
+ - `attachment_pattern` -- (str) Applicable only with `download_attachments:true`. Regex pattern to filter particular attachments. e.g. to retrieve only pdf file types use: .+\.pdf
+
+ 
+ 
 
 ### query
 
@@ -43,7 +57,11 @@ More information on keywords [here](docs/imap-search.md)
     "user_name": "example@gmail.com",
     "host": "imap.gmail.com",
     "port": 993,
-    "query":"(FROM "email" SUBJECT "the subject" UNSEEN)"
+    "query":"(FROM "email" SUBJECT "the subject" UNSEEN)",
+    "download_content": true,
+    "download_attachments": true,
+    "attachment_pattern": ".+\\.pdf"
+
   }
 ```
 
@@ -52,7 +70,10 @@ Output
 
 Single table named `emails`.
 
-Columns: `['uid', 'mail_box', 'date', 'from', 'to', 'body', 'headers', 'number_of_attachments', 'size']`
+Columns: `['pk', 'uid', 'mail_box', 'date', 'from', 'to', 'body', 'headers', 'number_of_attachments', 'size']`
+
+
+Attachments in `out/files/` prefixed by the generated message `pk`. e.g. `out/files/bb41793268d4a8710fb5ebd94eaed6bc_some_file.pdf`
 
 Development
 -----------

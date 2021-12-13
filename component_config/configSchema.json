@@ -1,6 +1,6 @@
 {
   "type": "object",
-  "title": "extractor configuration",
+  "title": "IMAP Settings",
   "required": [
     "user_name",
     "#password",
@@ -29,13 +29,6 @@
       "title": "IMAP Port",
       "default": 993,
       "propertyOrder": 400
-    },
-    "query": {
-      "type": "string",
-      "title": "Search query",
-      "description": "Search query, e.g. (FROM \"email\" SUBJECT \"the subject\" UNSEEN) . Find more information on the syntax in the documentation.",
-      "default": "ALL",
-      "propertyOrder": 500
     }
   }
 }
