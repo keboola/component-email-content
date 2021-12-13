@@ -108,7 +108,7 @@ class Component(ComponentBase):
         for a in attachments:
             email_pk = self._build_email_pk(msg)
             file_def = self.create_out_file_definition(f"{email_pk}_{a.filename}", tags=[f'email_pk: {email_pk}',
-                                                                                         f'email_date: {msg.date_str}'])
+                                                                                         f'email_date: {msg.date}'])
             with open(file_def.full_path, 'wb') as out_file:
                 out_file.write(a.payload)
             results.append(file_def)
@@ -135,7 +135,7 @@ class Component(ComponentBase):
     def _build_email_pk(self, msg: MailMessage):
         compound_key = [str(msg.uid),
                         self.configuration.parameters[KEY_USER],
-                        str(msg.date_str),
+                        str(msg.date),
                         str(msg.from_),
                         ';'.join(msg.to),
                         str(msg.size)
