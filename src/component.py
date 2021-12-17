@@ -54,7 +54,7 @@ class Component(ComponentBase):
 
         query = params.get(KEY_QUERY, '(ALL)')
         logging.info(f"Getting messages with query {query}")
-        msgs = self._imap_client.fetch(charset='UTF-8', criteria=query)
+        msgs = self._imap_client.fetch(criteria=query)
 
         count = 0
         results = [output_table]
