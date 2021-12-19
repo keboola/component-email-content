@@ -19,7 +19,7 @@
     "date_since": {
           "type": "string",
           "title": "Period from date [including].",
-          "default": "1 week ago",
+          "default": "",
           "description": " Date in YYYY-MM-DD format or dateparser string i.e. 5 days ago, 1 month ago, yesterday, etc. If left empty, all records are downloaded.",
           "propertyOrder": 150
         },
