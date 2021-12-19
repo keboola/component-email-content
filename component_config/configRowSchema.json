@@ -3,6 +3,7 @@
   "title": "extractor configuration",
   "required": [
     "query",
+    "date_since",
     "download_content",
     "download_attachments"
 
@@ -15,6 +16,13 @@
       "default": "ALL",
       "propertyOrder": 100
     },
+    "date_since": {
+          "type": "string",
+          "title": "Period from date [including].",
+          "default": "",
+          "description": " Date in YYYY-MM-DD format or dateparser string i.e. 5 days ago, 1 month ago, yesterday, etc. If left empty, all records are downloaded.",
+          "propertyOrder": 150
+        },
     "download_content": {
       "type": "boolean",
       "format": "checkbox",
