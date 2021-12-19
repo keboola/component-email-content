@@ -10,6 +10,7 @@ from imap_tools import MailBox, MailMessage, MailboxLoginError
 from keboola.component.base import ComponentBase
 from keboola.component.dao import FileDefinition
 from keboola.component.exceptions import UserException
+from keboola.utils.date import parse_datetime_interval
 
 # configuration variables
 RESULT_COLUMNS = ['pk', 'uid', 'mail_box', 'date', 'from', 'to', 'body', 'headers', 'number_of_attachments', 'size']
@@ -53,6 +54,14 @@ class Component(ComponentBase):
         download_attachments = params.get(KEY_ATTACHMENTS, False)
 
         query = params.get(KEY_QUERY, '(ALL)')
+        date_since_str = self.configuration.parameters.get('date_since') or '2000-01-01'
+        date_to = 'now'
+        since, to = parse_datetime_interval(date_since_str, date_to, strformat='%d-%b-%Y')
+        since_search = f'(SINCE {since})'
+
+        if self.configuration.parameters.get('date_since'):
+            query = f"{query} {since_search}"
+
         logging.info(f"Getting messages with query {query}")
         msgs = self._imap_client.fetch(criteria=query)
 
