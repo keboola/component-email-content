@@ -4,6 +4,7 @@ import imaplib
 import json
 import logging
 import re
+import warnings
 from typing import List
 
 from imap_tools import MailBox, MailMessage, MailboxLoginError
@@ -35,6 +36,11 @@ class Component(ComponentBase):
     def __init__(self):
         super().__init__()
         self._imap_client: MailBox = self._init_client()
+        # temp suppress pytz warning
+        warnings.filterwarnings(
+            "ignore",
+            message="The localize method is no longer necessary, as this time zone supports the fold attribute",
+        )
 
     def run(self):
         """
@@ -67,17 +73,21 @@ class Component(ComponentBase):
 
         count = 0
         results = [output_table]
-        with open(output_table.full_path, 'w+', encoding='utf-8') as output:
-            writer = csv.DictWriter(output, fieldnames=RESULT_COLUMNS, dialect='kbc')
-            writer.writeheader()
+        try:
+            with open(output_table.full_path, 'w+', encoding='utf-8') as output:
+                writer = csv.DictWriter(output, fieldnames=RESULT_COLUMNS, dialect='kbc')
+                writer.writeheader()
 
-            for msg in msgs:
-                count = + 1
-                if download_content:
-                    self._write_message_content(writer, msg)
+                for msg in msgs:
+                    count = + 1
+                    if download_content:
+                        self._write_message_content(writer, msg)
 
-                if download_attachments:
-                    results.extend(self._write_message_attachments(msg))
+                    if download_attachments:
+                        results.extend(self._write_message_attachments(msg))
+        except imaplib.IMAP4.error as e:
+            if 'SEARCH command error' in str(e):
+                raise UserException(f'Invalid search query, please check the syntax: "{query}"')
 
         logging.info(f"Processed {count} messages")
         self.write_manifests(results)
@@ -91,17 +101,20 @@ class Component(ComponentBase):
             self._imap_client.login(username=params[KEY_USER], password=params[KEY_PASSWORD])
         except MailboxLoginError as e:
             raise UserException(
-                f"Failed to login, please check your credentials and connection settings. \nDetails: "
+                "Failed to login, please check your credentials and connection settings. \nDetails: "
                 f"{e}") from e
-        except imaplib.IMAP4.error as e:
+        except (MailboxLoginError, imaplib.IMAP4.error) as e:
             raise UserException(
-                f"Failed to login, please check your credentials and connection settings. \nDetails: "
-                f"{e}") from e
+                "Failed to login, please check your credentials and connection settings.") from e
 
     def _init_client(self):
         self.validate_configuration_parameters([KEY_HOST, KEY_USER, KEY_PORT, KEY_PASSWORD])
         params = self.configuration.parameters
-        return MailBox(params[KEY_HOST], params.get(KEY_PORT, 993))
+        try:
+            return MailBox(params[KEY_HOST], params.get(KEY_PORT, 993))
+        except Exception as e:
+            raise UserException(
+                f"Failed to login, please check your credentials and connection settings. Details: {e}") from e
 
     def close_client(self):
         self._imap_client.logout()
