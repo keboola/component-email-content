@@ -21,11 +21,16 @@ Note that for GMAIL you will need to enable access for the ["less secure" apps](
 # KBC Features
 
 
-| **Feature**             | **Note**                                      |
-|-------------------------|-----------------------------------------------|
-| Generic UI form         | Dynamic UI form |             
-| Row based configuration         | Dynamic UI form |             
-| Incremental loading     | Allows fetching data in new increments.       |
+| **Feature**                | **Note**                                                                                                                   |
+|----------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| Generic UI form            | Dynamic UI form                                                                                                            |             
+| Row based configuration    | Allows execution of each row in parallel.                                                                                  |             
+| Incremental loading        | Allows fetching data in new increments.                                                                                    |
+| IMAP query syntax          | Filter emails using standard [IMAP query](docs/imap-search.md)                                                             |
+| Download email contents    | Full body of email downloaded into the Storage column                                                                      |
+| Download email attachments | All attachments downloaded by default into a file storage.                                                                 |
+| Filter email attachments   | Download only attachments matching specified regex expression                                                              |
+| Processors support         | Use processor to modify the outputs before saving to storage, e.g. process attachments to be stored in the Tabular Storage |
 
 
 # Configuration
@@ -91,8 +96,8 @@ Clone this repository, init the workspace and run the component with following
 command:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-git clone repo_path my-new-component
-cd my-new-component
+git clone https://bitbucket.org/kds_consulting_team/kds-team.ex-email-content.git
+cd kds-team.ex-email-content
 docker-compose build
 docker-compose run --rm dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
