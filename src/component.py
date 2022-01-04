@@ -93,15 +93,18 @@ class Component(ComponentBase):
             raise UserException(
                 f"Failed to login, please check your credentials and connection settings. \nDetails: "
                 f"{e}") from e
-        except imaplib.IMAP4.error as e:
+        except (MailboxLoginError, imaplib.IMAP4.error) as e:
             raise UserException(
-                f"Failed to login, please check your credentials and connection settings. \nDetails: "
-                f"{e}") from e
+                f"Failed to login, please check your credentials and connection settings.") from e
 
     def _init_client(self):
         self.validate_configuration_parameters([KEY_HOST, KEY_USER, KEY_PORT, KEY_PASSWORD])
         params = self.configuration.parameters
-        return MailBox(params[KEY_HOST], params.get(KEY_PORT, 993))
+        try:
+            return MailBox(params[KEY_HOST], params.get(KEY_PORT, 993))
+        except Exception as e:
+            raise UserException(
+                f"Failed to login, please check your credentials and connection settings. Details: {e}") from e
 
     def close_client(self):
         self._imap_client.logout()
