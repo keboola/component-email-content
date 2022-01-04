@@ -1,1 +1,1 @@
-Download email content (body) and metadata using IMAP protocol.
+Download email content (body), metadata and/or attachments using IMAP protocol.
