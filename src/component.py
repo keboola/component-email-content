@@ -34,7 +34,7 @@ class Component(ComponentBase):
 
     def __init__(self):
         super().__init__()
-        self._imap_client = self.init_client()
+        self._imap_client: MailBox = self._init_client()
 
     def run(self):
         """
@@ -98,7 +98,8 @@ class Component(ComponentBase):
                 f"Failed to login, please check your credentials and connection settings. \nDetails: "
                 f"{e}") from e
 
-    def init_client(self):
+    def _init_client(self):
+        self.validate_configuration_parameters([KEY_HOST, KEY_USER, KEY_PORT, KEY_PASSWORD])
         params = self.configuration.parameters
         return MailBox(params[KEY_HOST], params.get(KEY_PORT, 993))
 
