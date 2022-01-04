@@ -4,6 +4,7 @@ import imaplib
 import json
 import logging
 import re
+import warnings
 from typing import List
 
 from imap_tools import MailBox, MailMessage, MailboxLoginError
@@ -35,6 +36,11 @@ class Component(ComponentBase):
     def __init__(self):
         super().__init__()
         self._imap_client: MailBox = self._init_client()
+        # temp suppress pytz warning
+        warnings.filterwarnings(
+            "ignore",
+            message="The localize method is no longer necessary, as this time zone supports the fold attribute",
+        )
 
     def run(self):
         """
