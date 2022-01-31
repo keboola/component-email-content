@@ -15,7 +15,9 @@ Extract email body and other metadata using IMAP protocol.
 
 Have IMAP service enabled on your Email account. Please refer to your email provider for more information.
 
-Note that for GMAIL you will need to enable access for the ["less secure" apps](https://support.google.com/accounts/answer/6010255?hl=en). 
+Note that for GMAIL you will need to use [App Password](https://support.google.com/accounts/answer/185833?hl=en)
+
+Or alternatively (not recommended) enable access for the ["less secure" apps](https://support.google.com/accounts/answer/6010255?hl=en). 
  
 
 # KBC Features
