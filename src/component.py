@@ -14,6 +14,7 @@ from keboola.component.exceptions import UserException
 from keboola.utils.date import parse_datetime_interval
 
 # configuration variables
+KEY_IMAP_FOLDER = 'imap_folder'
 RESULT_COLUMNS = ['pk', 'uid', 'mail_box', 'date', 'from', 'to', 'body', 'headers', 'number_of_attachments', 'size']
 KEY_PASSWORD = '#password'
 KEY_USER = 'user_name'
@@ -68,7 +69,8 @@ class Component(ComponentBase):
         if self.configuration.parameters.get('date_since'):
             query = f"{query} {since_search}"
 
-        logging.info(f"Getting messages with query {query}")
+        logging.info(f"Getting messages with query {query} "
+                     f"from folder {self._imap_client.folder.get()}")
         msgs = self._imap_client.fetch(criteria=query)
 
         count = 0
@@ -78,13 +80,15 @@ class Component(ComponentBase):
                 writer = csv.DictWriter(output, fieldnames=RESULT_COLUMNS, dialect='kbc')
                 writer.writeheader()
 
-                for msg in msgs:
-                    count = + 1
+                for count, msg in enumerate(msgs):
                     if download_content:
                         self._write_message_content(writer, msg)
 
                     if download_attachments:
                         results.extend(self._write_message_attachments(msg))
+
+                    if count % 10 == 0:
+                        logging.info(f'Processing messages {count} - {count + 10}')
         except imaplib.IMAP4.error as e:
             if 'SEARCH command error' in str(e):
                 raise UserException(f'Invalid search query, please check the syntax: "{query}"')
@@ -97,8 +101,10 @@ class Component(ComponentBase):
 
     def client_login(self):
         params = self.configuration.parameters
+        imap_folder = params.get(KEY_IMAP_FOLDER, 'INBOX') or 'INBOX'
         try:
-            self._imap_client.login(username=params[KEY_USER], password=params[KEY_PASSWORD])
+            self._imap_client.login(username=params[KEY_USER], password=params[KEY_PASSWORD],
+                                    initial_folder=imap_folder)
         except MailboxLoginError as e:
             raise UserException(
                 "Failed to login, please check your credentials and connection settings. \nDetails: "

@@ -43,6 +43,7 @@ Or alternatively (not recommended) enable access for the ["less secure" apps](ht
  - `user_name` -- login
  - `host` -- IMAP HOST
  - `query` -- Query string to filter emails. E.g. `(FROM "email" SUBJECT "the subject" UNSEEN)`, More information on keywords [here](docs/imap-search.md)
+ - `imap_folder` -- Folder to get the emails from. Defaults to the root folder `INBOX`. For example a label name in GMAIL = folder.
  - `download_content` -- (boolean) if true, content of the email will be downloaded into the `out/tables/emails.csv` table
  - `download_attachments` -- (boolean) if true, attachments of the email will be downloaded into `out/files/` folder, prefixed by generated email `pk`.
  - `attachment_pattern` -- (str) Applicable only with `download_attachments:true`. Regex pattern to filter particular attachments. e.g. to retrieve only pdf file types use: .+\.pdf
