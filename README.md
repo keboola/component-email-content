@@ -18,6 +18,9 @@ Have IMAP service enabled on your Email account. Please refer to your email prov
 Note that for GMAIL you will need to use [App Password](https://support.google.com/accounts/answer/185833?hl=en)
 
 Or alternatively (not recommended) enable access for the ["less secure" apps](https://support.google.com/accounts/answer/6010255?hl=en). 
+
+Note that the app fetches emails from the root `INBOX` folder. If you use labels and filters in Gmail for instance, that move the messages to a different folder, 
+please set the `imap_folder` configuration parameter.
  
 
 # KBC Features
