@@ -21,6 +21,7 @@ KEY_USER = 'user_name'
 KEY_HOST = 'host'
 KEY_PORT = 'port'
 KEY_QUERY = 'query'
+KEY_MARK_SEEN = 'mark_seen'
 
 KEY_CONTENT = 'download_content'
 KEY_ATTACHMENTS = 'download_attachments'
@@ -60,6 +61,8 @@ class Component(ComponentBase):
         download_content = params.get(KEY_CONTENT, True)
         download_attachments = params.get(KEY_ATTACHMENTS, False)
 
+        mark_seen = params.get(KEY_MARK_SEEN, True)
+
         query = params.get(KEY_QUERY, '(ALL)')
         date_since_str = self.configuration.parameters.get('date_since') or '2000-01-01'
         date_to = 'now'
@@ -71,7 +74,7 @@ class Component(ComponentBase):
 
         logging.info(f"Getting messages with query {query} "
                      f"from folder {self._imap_client.folder.get()}")
-        msgs = self._imap_client.fetch(criteria=query)
+        msgs = self._imap_client.fetch(criteria=query, mark_seen=mark_seen)
 
         count = 0
         results = [output_table]
