@@ -48,6 +48,7 @@ please set the `imap_folder` configuration parameter.
  - `query` -- Query string to filter emails. E.g. `(FROM "email" SUBJECT "the subject" UNSEEN)`, More information on keywords [here](docs/imap-search.md)
  - `imap_folder` -- Folder to get the emails from. Defaults to the root folder `INBOX`. For example a label name in GMAIL = folder.
  - `download_content` -- (boolean) if true, content of the email will be downloaded into the `out/tables/emails.csv` table
+ - `mark_seen` -- (boolean) When set to true, emails that have been extracted will be marked as seen in the inbox.
  - `download_attachments` -- (boolean) if true, attachments of the email will be downloaded into `out/files/` folder, prefixed by generated email `pk`.
  - `attachment_pattern` -- (str) Applicable only with `download_attachments:true`. Regex pattern to filter particular attachments. e.g. to retrieve only pdf file types use: .+\.pdf
 

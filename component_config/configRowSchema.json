@@ -46,6 +46,14 @@
       "default": false,
       "propertyOrder": 300
     },
+    "mark_seen": {
+      "type": "boolean",
+      "format": "checkbox",
+      "title": "Mark seen",
+      "description": "When set to true, emails that have been extracted will be marked as seen in the inbox.",
+      "default": true,
+      "propertyOrder": 350
+    },
     "attachment_pattern": {
       "type": "string",
       "title": "Attachment Pattern",
