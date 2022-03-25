@@ -11,9 +11,11 @@ from imap_tools import MailBox, MailMessage, MailboxLoginError
 from keboola.component.base import ComponentBase
 from keboola.component.dao import FileDefinition
 from keboola.component.exceptions import UserException
+from keboola.utils import header_normalizer
 from keboola.utils.date import parse_datetime_interval
-
 # configuration variables
+from keboola.utils.header_normalizer import NormalizerStrategy
+
 KEY_IMAP_FOLDER = 'imap_folder'
 RESULT_COLUMNS = ['pk', 'uid', 'mail_box', 'date', 'from', 'to', 'body', 'headers', 'number_of_attachments', 'size']
 KEY_PASSWORD = '#password'
@@ -143,8 +145,11 @@ class Component(ComponentBase):
         results = []
         for a in attachments:
             email_pk = self._build_email_pk(msg)
-            file_def = self.create_out_file_definition(f"{email_pk}_{a.filename}", tags=[f'email_pk: {email_pk}',
-                                                                                         f'email_date: {msg.date}'])
+            normalizer = header_normalizer.get_normalizer(NormalizerStrategy.DEFAULT,
+                                                          permitted_chars=header_normalizer.PERMITTED_CHARS + '.')
+            file_path = normalizer.normalize_header([f"{email_pk}_{a.filename}"])[0]
+            file_def = self.create_out_file_definition(file_path, tags=[f'email_pk: {email_pk}',
+                                                                        f'email_date: {msg.date}'])
             with open(file_def.full_path, 'wb') as out_file:
                 out_file.write(a.payload)
             results.append(file_def)
