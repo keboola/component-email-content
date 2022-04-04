@@ -19,6 +19,7 @@ from keboola.utils.header_normalizer import NormalizerStrategy
 KEY_IMAP_FOLDER = 'imap_folder'
 RESULT_COLUMNS = ['pk', 'uid', 'mail_box', 'date', 'from', 'to', 'subject', 'body', 'body_html', 'headers',
                   'number_of_attachments', 'size', 'attachment_names']
+
 KEY_PASSWORD = '#password'
 KEY_USER = 'user_name'
 KEY_HOST = 'host'
