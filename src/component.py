@@ -17,7 +17,8 @@ from keboola.utils.date import parse_datetime_interval
 from keboola.utils.header_normalizer import NormalizerStrategy
 
 KEY_IMAP_FOLDER = 'imap_folder'
-RESULT_COLUMNS = ['pk', 'uid', 'mail_box', 'date', 'from', 'to', 'body', 'headers', 'number_of_attachments', 'size']
+RESULT_COLUMNS = ['pk', 'uid', 'mail_box', 'date', 'from', 'to', 'subject', 'body', 'headers', 'number_of_attachments',
+                  'size', 'attachment_names']
 KEY_PASSWORD = '#password'
 KEY_USER = 'user_name'
 KEY_HOST = 'host'
@@ -94,11 +95,13 @@ class Component(ComponentBase):
 
                     if count % 10 == 0:
                         logging.info(f'Processing messages {count} - {count + 10}')
+                        logging.info(f'Processed {len(results) - 1} attachments matching the pattern so far.')
         except imaplib.IMAP4.error as e:
             if 'SEARCH command error' in str(e):
                 raise UserException(f'Invalid search query, please check the syntax: "{query}"')
 
-        logging.info(f"Processed {count} messages")
+        logging.info(f"Processed {count} messages in total.")
+        logging.info(f"Processed {len(results)} attachments matching the pattern in total.")
         self.write_manifests(results)
 
         self.close_client()
@@ -141,7 +144,6 @@ class Component(ComponentBase):
     def _write_message_attachments(self, msg: MailMessage) -> List[FileDefinition]:
         attachments = self._filter_attachments_by_pattern(msg)
 
-        logging.info(f"{len(attachments)} attachments matching the pattern found.")
         results = []
         for a in attachments:
             email_pk = self._build_email_pk(msg)
@@ -166,9 +168,11 @@ class Component(ComponentBase):
                'date': msg.date,
                'from': msg.from_,
                'to': ';'.join(msg.to),
-               'body': msg.text,
+               'subject': msg.subject,
+               'body': msg.text or msg.html,
                'headers': json.dumps(msg.headers),
                'number_of_attachments': len(msg.attachments),
+               'attachment_names': [a.filename for a in msg.attachments],
                'size': msg.size}
 
         return row
