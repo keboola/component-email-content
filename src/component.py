@@ -68,6 +68,7 @@ class Component(ComponentBase):
         mark_seen = params.get(KEY_MARK_SEEN, True)
 
         query = params.get(KEY_QUERY, '(ALL)')
+        iana_charset = self.configuration.parameters.get('iana_charset', 'US-ASCII')
         date_since_str = self.configuration.parameters.get('date_since') or '2000-01-01'
         date_to = 'now'
         since, to = parse_datetime_interval(date_since_str, date_to, strformat='%d-%b-%Y')
@@ -78,7 +79,7 @@ class Component(ComponentBase):
 
         logging.info(f"Getting messages with query {query} "
                      f"from folder {self._imap_client.folder.get()}")
-        msgs = self._imap_client.fetch(criteria=query, mark_seen=mark_seen)
+        msgs = self._imap_client.fetch(criteria=query, mark_seen=mark_seen, charset=iana_charset)
 
         count = 0
         results = [output_table]
@@ -100,6 +101,9 @@ class Component(ComponentBase):
         except imaplib.IMAP4.error as e:
             if 'SEARCH command error' in str(e):
                 raise UserException(f'Invalid search query, please check the syntax: "{query}"')
+        except UnicodeEncodeError as e:
+            raise UserException('The parsing of the email content failed. '
+                                'Please set the appropriate encoding in IANA charset parameter.') from e
 
         logging.info(f"Processed {count + 1} messages in total.")
         logging.info(f"Processed {len(results)} attachments matching the pattern in total.")

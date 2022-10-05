@@ -38,6 +38,18 @@
       "default": true,
       "propertyOrder": 200
     },
+    "iana_charset": {
+      "type": "string",
+      "title": "IANA Charset",
+      "default": "US-ASCII",
+      "description": "Indicates charset that is used by the SMTP to represent the email content characters. Change this to a suitable type if you run into errors",
+      "propertyOrder": 201,
+      "options": {
+        "dependencies": {
+          "download_content": true
+        }
+      }
+    },
     "download_attachments": {
       "type": "boolean",
       "format": "checkbox",
