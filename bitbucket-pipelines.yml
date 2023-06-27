@@ -20,6 +20,11 @@ pipelines:
           - docker tag $APP_IMAGE:latest $REPOSITORY:test
           - eval $(docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-login $KBC_DEVELOPERPORTAL_VENDOR $KBC_DEVELOPERPORTAL_APP)
           - docker push $REPOSITORY:test
+          # Push test image to ecr for second component "kds-team.ex-ms-outlook-email-content" that uses same repo
+          - echo 'Pushing test image to repo. [tag=test] for kds-team.ex-ms-outlook-email-content'
+          - export REPOSITORY=`docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-repository $KBC_DEVELOPERPORTAL_VENDOR kds-team.ex-ms-outlook-email-content`
+          - docker tag $APP_IMAGE:latest $REPOSITORY:test
+          - eval $(docker run --rm -e KBC_DEV
 
   branches:
     master:
@@ -42,6 +47,9 @@ pipelines:
 #            - docker push $REPOSITORY:test
             - chmod +x ./scripts/update_dev_portal_properties.sh
             - ./scripts/update_dev_portal_properties.sh
+            # Update Dev properties for second component "kds-team.ex-ms-outlook-email-content" that uses same repo
+            - chmod +x ./scripts/update_dev_portal_properties_ms_outlook.sh
+            - ./scripts/update_dev_portal_properties_ms_outlook.sh
   tags:
     '*':
       - step:
@@ -66,3 +74,8 @@ pipelines:
             - chmod +x ./deploy.sh
             - ./scripts/update_dev_portal_properties.sh
             - ./deploy.sh
+            # Deploy second component "kds-team.ex-ms-outlook-email-content" that uses same repo
+            - chmod +x ./scripts/update_dev_portal_properties_ms_outlook.sh
+            - chmod +x ./deploy-kds-team.ex-ms-outlook-email-content.sh
+            - ./scripts/update_dev_portal_properties_ms_outlook.sh
+            - ./deploy-kds-team.ex-ms-outlook-email-content.sh
