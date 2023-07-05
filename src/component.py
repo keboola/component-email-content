@@ -3,6 +3,7 @@ import hashlib
 import imaplib
 import json
 import logging
+import msal
 import re
 import warnings
 from typing import List
@@ -42,6 +43,7 @@ class Component(ComponentBase):
     def __init__(self):
         super().__init__()
         self._imap_client: MailBox = self._init_client()
+        self.oauth_login: bool = self.environment_variables.component_id == "kds-team.ex-ms-outlook-email-content"
         # temp suppress pytz warning
         warnings.filterwarnings(
             "ignore",
@@ -111,18 +113,45 @@ class Component(ComponentBase):
     def client_login(self):
         params = self.configuration.parameters
         imap_folder = params.get(KEY_IMAP_FOLDER, 'INBOX') or 'INBOX'
-        try:
-            self._imap_client.login(username=params[KEY_USER], password=params[KEY_PASSWORD],
-                                    initial_folder=imap_folder)
-        except MailboxLoginError as e:
-            raise UserException(
-                "Failed to login, please check your credentials and connection settings. \nDetails: "
-                f"{e}") from e
-        except (MailboxLoginError, imaplib.IMAP4.error) as e:
-            raise UserException(
-                "Failed to login, please check your credentials and connection settings.") from e
+        if self.oauth_login:
+            self._imap_client.folder.set(imap_folder)
+        else:
+            try:
+                self._imap_client.login(username=params[KEY_USER], password=params[KEY_PASSWORD],
+                                        initial_folder=imap_folder)
+            except MailboxLoginError as e:
+                raise UserException(
+                    "Failed to login, please check your credentials and connection settings. \nDetails: "
+                    f"{e}") from e
+            except (MailboxLoginError, imaplib.IMAP4.error) as e:
+                raise UserException(
+                    "Failed to login, please check your credentials and connection settings.") from e
 
-    def _init_client(self):
+    @staticmethod
+    def get_access_token(config, refresh_token):
+        app = msal.ConfidentialClientApplication(config['client_id'], authority=config['authority'],
+                                                 client_credential=config['secret'])
+        result = app.acquire_token_by_refresh_token(refresh_token, config["scope"])
+        if "access_token" in result:
+            return result["access_token"]
+        else:
+            raise UserException(f"Failed to login to inbox with oAuth. Got error {result.get('error')}. "
+                                f"Error description : {result.get('error_description')}. "
+                                f"Correlation ID : {result.get('correlation_id')}")
+
+    def _init_client_from_oauth(self):
+        config = {"authority": "https://login.microsoftonline.com/common",
+                  "client_id": self.configuration.oauth_credentials.appKey,
+                  "scope": ["https://outlook.office.com/IMAP.AccessAsUser.All"],
+                  "secret": self.configuration.oauth_credentials.appSecret}
+
+        refresh_token = self.configuration.oauth_credentials.data.get("refresh_token")
+        access_token = self.get_access_token(config, refresh_token=refresh_token)
+        params = self.configuration.parameters
+
+        return MailBox(params[KEY_HOST]).xoauth2(params[KEY_USER], access_token)
+
+    def _init_client_from_username_and_pass(self):
         self.validate_configuration_parameters([KEY_HOST, KEY_USER, KEY_PORT, KEY_PASSWORD])
         params = self.configuration.parameters
         try:
@@ -130,6 +159,12 @@ class Component(ComponentBase):
         except Exception as e:
             raise UserException(
                 f"Failed to login, please check your credentials and connection settings. Details: {e}") from e
+
+    def _init_client(self):
+        if self.oauth_login:
+            return self._init_client_from_oauth()
+        else:
+            return self._init_client_from_username_and_pass()
 
     def close_client(self):
         self._imap_client.logout()

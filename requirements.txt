@@ -3,3 +3,4 @@ keboola.utils
 mock
 freezegun
 imap_tools
+msal
