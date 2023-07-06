@@ -34,7 +34,7 @@ KEY_ATTACHMENT_PATTERN = 'attachment_pattern'
 
 # list of mandatory parameters => if some is missing,
 # component will fail with readable message on initialization.
-REQUIRED_PARAMETERS = [KEY_PASSWORD, KEY_USER, KEY_HOST]
+REQUIRED_PARAMETERS = [KEY_USER, KEY_HOST]
 REQUIRED_IMAGE_PARS = []
 
 
@@ -42,13 +42,16 @@ class Component(ComponentBase):
 
     def __init__(self):
         super().__init__()
-        self._imap_client: MailBox = self._init_client()
-        self.oauth_login: bool = self.environment_variables.component_id == "kds-team.ex-ms-outlook-email-content"
+        self._imap_client: MailBox
         # temp suppress pytz warning
         warnings.filterwarnings(
             "ignore",
             message="The localize method is no longer necessary, as this time zone supports the fold attribute",
         )
+
+    @property
+    def use_oauth_login(self):
+        return self.environment_variables.component_id == "kds-team.ex-ms-outlook-email-content"
 
     def run(self):
         """
@@ -59,7 +62,7 @@ class Component(ComponentBase):
         params = self.configuration.parameters
 
         logging.info("Logging in..")
-        self.client_login()
+        self._init_client()
 
         # output table
         output_table = self.create_out_table_definition('emails.csv', primary_key=['pk'], incremental=True)
@@ -110,23 +113,6 @@ class Component(ComponentBase):
         self.close_client()
         logging.info("Extraction finished.")
 
-    def client_login(self):
-        params = self.configuration.parameters
-        imap_folder = params.get(KEY_IMAP_FOLDER, 'INBOX') or 'INBOX'
-        if self.oauth_login:
-            self._imap_client.folder.set(imap_folder)
-        else:
-            try:
-                self._imap_client.login(username=params[KEY_USER], password=params[KEY_PASSWORD],
-                                        initial_folder=imap_folder)
-            except MailboxLoginError as e:
-                raise UserException(
-                    "Failed to login, please check your credentials and connection settings. \nDetails: "
-                    f"{e}") from e
-            except (MailboxLoginError, imaplib.IMAP4.error) as e:
-                raise UserException(
-                    "Failed to login, please check your credentials and connection settings.") from e
-
     @staticmethod
     def get_access_token(config, refresh_token):
         app = msal.ConfidentialClientApplication(config['client_id'], authority=config['authority'],
@@ -148,21 +134,35 @@ class Component(ComponentBase):
         refresh_token = self.configuration.oauth_credentials.data.get("refresh_token")
         access_token = self.get_access_token(config, refresh_token=refresh_token)
         params = self.configuration.parameters
+        self._imap_client = MailBox(params[KEY_HOST]).xoauth2(params[KEY_USER], access_token)
 
-        return MailBox(params[KEY_HOST]).xoauth2(params[KEY_USER], access_token)
+        imap_folder = params.get(KEY_IMAP_FOLDER, 'INBOX') or 'INBOX'
+        self._imap_client.folder.set(imap_folder)
 
     def _init_client_from_username_and_pass(self):
         self.validate_configuration_parameters([KEY_HOST, KEY_USER, KEY_PORT, KEY_PASSWORD])
         params = self.configuration.parameters
         try:
-            return MailBox(params[KEY_HOST], params.get(KEY_PORT, 993))
+            self._imap_client = MailBox(params[KEY_HOST], params.get(KEY_PORT, 993))
         except Exception as e:
             raise UserException(
                 f"Failed to login, please check your credentials and connection settings. Details: {e}") from e
 
+        imap_folder = params.get(KEY_IMAP_FOLDER, 'INBOX') or 'INBOX'
+        try:
+            self._imap_client.login(username=params[KEY_USER], password=params[KEY_PASSWORD],
+                                    initial_folder=imap_folder)
+        except MailboxLoginError as e:
+            raise UserException(
+                "Failed to login, please check your credentials and connection settings. \nDetails: "
+                f"{e}") from e
+        except (MailboxLoginError, imaplib.IMAP4.error) as e:
+            raise UserException(
+                "Failed to login, please check your credentials and connection settings.") from e
+
     def _init_client(self):
-        if self.oauth_login:
-            return self._init_client_from_oauth()
+        if self.use_oauth_login:
+            self._init_client_from_oauth()
         else:
             return self._init_client_from_username_and_pass()
 
