@@ -150,7 +150,7 @@ class Component(ComponentBase):
         access_token = self.get_access_token(refresh_token=refresh_token)
         params = self.configuration.parameters
         try:
-            self._imap_client = MailBox(params[KEY_HOST]).xoauth2(params[KEY_USER], access_token)
+            self._imap_client = MailBox(params[KEY_HOST], params.get(KEY_PORT, 993)).xoauth2(params[KEY_USER], access_token)
         except imaplib.IMAP4.error as e:
             raise UserException("Failed to log in to mailbox, the username is invalid.") from e
         except socket.gaierror as e:
