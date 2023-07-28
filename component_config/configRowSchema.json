@@ -12,7 +12,7 @@
     "query": {
       "type": "string",
       "title": "Search query",
-      "description": "Select only emails matching the search query, e.g. (FROM \"email\" SUBJECT \"the subject\" UNSEEN) . Find more information on the syntax in the documentation.",
+      "description": "Select only emails matching the search query, e.g. (FROM \"email\" SUBJECT \"the subject\" UNSEEN) . Find more information on the syntax in the <a href=\"https://help.keboola.com/components/extractors/communication/email-imap/query-syntax/\">documentation.</a>",
       "default": "ALL",
       "propertyOrder": 100
     },
