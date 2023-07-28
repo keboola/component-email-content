@@ -1,14 +1,14 @@
 import csv
 import hashlib
 import imaplib
-import socket
 import json
 import logging
-import msal
 import re
+import socket
 import warnings
 from typing import List
 
+import msal
 from imap_tools import MailBox, MailMessage, MailboxLoginError, MailboxFolderSelectError
 from keboola.component.base import ComponentBase
 from keboola.component.dao import FileDefinition
@@ -111,8 +111,10 @@ class Component(ComponentBase):
             if 'SEARCH command error' in str(e):
                 raise UserException(f'Invalid search query, please check the syntax: "{query}"')
 
-        logging.info(f"Processed {count + 1} messages in total.")
-        logging.info(f"Processed {len(results)} attachments matching the pattern in total.")
+        logging.info(f"Processed {count} messages in total.")
+        logging.info(f"Processed {len(results) - 1} attachments matching the pattern in total.")
+        if count == 0:
+            logging.warning("No messages matched the specified filter")
         self.write_manifests(results)
 
         self.close_client()
