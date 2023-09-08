@@ -9,7 +9,7 @@
   "properties": {
     "user_name": {
       "type": "string",
-      "title": "User Name",
+      "title": "Email address",
       "propertyOrder": 100
     },
     "host": {
