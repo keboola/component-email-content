@@ -8,6 +8,7 @@ pipelines:
           - docker
         script:
           - export APP_IMAGE=keboola-component
+          - export TAG=${BITBUCKET_BRANCH//\//-}
           - docker build . --tag=$APP_IMAGE
           - docker images
           - docker -v
@@ -15,16 +16,17 @@ pipelines:
           - echo "Running unit-tests..."
           - docker run $APP_IMAGE python -m unittest discover
           # push test image to ecr - uncomment for testing before deployment
-          - echo 'Pushing test image to repo. [tag=test]'
+          - echo 'Pushing test image to repo. [tag=${TAG}]'
           - export REPOSITORY=`docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-repository $KBC_DEVELOPERPORTAL_VENDOR $KBC_DEVELOPERPORTAL_APP`
           - docker tag $APP_IMAGE:latest $REPOSITORY:test
           - eval $(docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-login $KBC_DEVELOPERPORTAL_VENDOR $KBC_DEVELOPERPORTAL_APP)
-          - docker push $REPOSITORY:test
+          - docker push $REPOSITORY:$TAG
           # Push test image to ecr for second component "kds-team.ex-ms-outlook-email-content" that uses same repo
-          - echo 'Pushing test image to repo. [tag=test] for kds-team.ex-ms-outlook-email-content'
-          - export REPOSITORY=`docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-repository $KBC_DEVELOPERPORTAL_VENDOR kds-team.ex-ms-outlook-email-content`
-          - docker tag $APP_IMAGE:latest $REPOSITORY:test
+          - echo 'Pushing test image to repo. [tag=${TAG}] for kds-team.ex-ms-outlook-email-content'
+          - export REPOSITORY=`docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-repository $KBC_DEVELOPERPORTAL_VENDOR KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK`
+          - docker tag $APP_IMAGE:latest $REPOSITORY:$TAG
           - eval $(docker run --rm -e KBC_DEV)
+          - docker push $REPOSITORY:$TAG
 
   branches:
     master:
