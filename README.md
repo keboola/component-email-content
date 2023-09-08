@@ -1,7 +1,9 @@
 # Email Content Extractor
 
+This is a repository for both kds-team.ex-email-content and kds-team.ex-ms-outlook-email-content.
+kds-team.ex-ms-outlook-email-content exists to support Office 365 version of MS Outlook.
 
-Extract email body and other metadata using IMAP protocol.
+This component allows you to extract email body and other metadata using IMAP protocol.
 
 **Table of contents:**
 
@@ -16,8 +18,10 @@ Extract email body and other metadata using IMAP protocol.
 Have IMAP service enabled on your Email account. Please refer to your email provider for more information.
 
 Note that for GMAIL you will need to use [App Password](https://support.google.com/accounts/answer/185833?hl=en)
+or alternatively (not recommended) enable access for the ["less secure" apps](https://support.google.com/accounts/answer/6010255?hl=en). 
 
-Or alternatively (not recommended) enable access for the ["less secure" apps](https://support.google.com/accounts/answer/6010255?hl=en). 
+For MS Outlook in Office 365 suite, you will need to grant permission using oAuth.
+
 
 Note that the app fetches emails from the root `INBOX` folder. If you use labels and filters in Gmail for instance, that move the messages to a different folder, 
 please set the `imap_folder` configuration parameter.
@@ -42,7 +46,7 @@ please set the `imap_folder` configuration parameter.
 
 ## Supported parameters:
 
- - `#password` --  login
+ - `#password` --  not needed for kds-team.ex-ms-outlook-email-content
  - `user_name` -- login
  - `host` -- IMAP HOST
  - `query` -- Query string to filter emails. E.g. `(FROM "email" SUBJECT "the subject" UNSEEN)`, More information on keywords [here](docs/imap-search.md)
