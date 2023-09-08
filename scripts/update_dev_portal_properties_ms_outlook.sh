@@ -6,8 +6,8 @@ docker pull quay.io/keboola/developer-portal-cli-v2:latest
 
 
 # Update properties in Keboola Developer Portal
-echo "Updating long description"
-value=`cat component_config/component_long_description.md`
+echo "Updating long description for ${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK}"
+value=`cat component_config_ms_outlook/component_long_description.md`
 echo "$value"
 if [ ! -z "$value" ]
 then
@@ -15,14 +15,14 @@ then
             -e KBC_DEVELOPERPORTAL_USERNAME \
             -e KBC_DEVELOPERPORTAL_PASSWORD \
             quay.io/keboola/developer-portal-cli-v2:latest \
-            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} kds-team.ex-ms-outlook-email-content longDescription --value="$value"
+            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK} longDescription --value="$value"
 else
-    echo "longDescription is empty!"
+    echo "${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK} longDescription is empty!"
     exit 1
 fi
 
-echo "Updating config schema"
-value=`cat component_config/configSchema.json`
+echo "Updating config schema for ${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK}"
+value=`cat component_config_ms_outlook/configSchema.json`
 echo "$value"
 if [ ! -z "$value" ]
 then
@@ -30,13 +30,13 @@ then
             -e KBC_DEVELOPERPORTAL_USERNAME \
             -e KBC_DEVELOPERPORTAL_PASSWORD \
             quay.io/keboola/developer-portal-cli-v2:latest \
-            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} kds-team.ex-ms-outlook-email-content configurationSchema --value="$value"
+            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK} configurationSchema --value="$value"
 else
-    echo "configurationSchema is empty!"
+    echo "${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK} configurationSchema is empty!"
 fi
 
-echo "Updating row config schema"
-value=`cat component_config/configRowSchema.json`
+echo "Updating row config schema for ${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK}"
+value=`cat component_config_ms_outlook/configRowSchema.json`
 echo "$value"
 if [ ! -z "$value" ]
 then
@@ -44,31 +44,15 @@ then
             -e KBC_DEVELOPERPORTAL_USERNAME \
             -e KBC_DEVELOPERPORTAL_PASSWORD \
             quay.io/keboola/developer-portal-cli-v2:latest \
-            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} kds-team.ex-ms-outlook-email-content configurationRowSchema --value="$value"
+            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK} configurationRowSchema --value="$value"
 else
-    echo "configurationRowSchema is empty!"
-fi
-
-
-echo "Updating config description"
-
-value=`cat component_config/configuration_description.md`
-echo "$value"
-if [ ! -z "$value" ]
-then
-    docker run --rm \
-            -e KBC_DEVELOPERPORTAL_USERNAME \
-            -e KBC_DEVELOPERPORTAL_PASSWORD \
-            quay.io/keboola/developer-portal-cli-v2:latest \
-            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} kds-team.ex-ms-outlook-email-content configurationDescription --value="$value"
-else
-    echo "configurationDescription is empty!"
+    echo "${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK} configurationRowSchema is empty!"
 fi
 
 
-echo "Updating short description"
+echo "Updating config description for ${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK}"
 
-value=`cat component_config/component_short_description.md`
+value=`cat component_config_ms_outlook/configuration_description.md`
 echo "$value"
 if [ ! -z "$value" ]
 then
@@ -76,14 +60,15 @@ then
             -e KBC_DEVELOPERPORTAL_USERNAME \
             -e KBC_DEVELOPERPORTAL_PASSWORD \
             quay.io/keboola/developer-portal-cli-v2:latest \
-            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} kds-team.ex-ms-outlook-email-content shortDescription --value="$value"
+            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK} configurationDescription --value="$value"
 else
-    echo "shortDescription is empty!"
+    echo "${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK} configurationDescription is empty!"
 fi
 
-echo "Updating logger settings"
 
-value=`cat component_config/logger`
+echo "Updating short description for ${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK}"
+
+value=`cat component_config_ms_outlook/component_short_description.md`
 echo "$value"
 if [ ! -z "$value" ]
 then
@@ -91,13 +76,14 @@ then
             -e KBC_DEVELOPERPORTAL_USERNAME \
             -e KBC_DEVELOPERPORTAL_PASSWORD \
             quay.io/keboola/developer-portal-cli-v2:latest \
-            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} kds-team.ex-ms-outlook-email-content logger --value="$value"
+            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK} shortDescription --value="$value"
 else
-    echo "logger type is empty!"
+    echo "${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK} shortDescription is empty!"
 fi
 
-echo "Updating logger configuration"
-value=`cat component_config/loggerConfiguration.json`
+echo "Updating logger settings for ${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK}"
+
+value=`cat component_config_ms_outlook/logger`
 echo "$value"
 if [ ! -z "$value" ]
 then
@@ -105,7 +91,21 @@ then
             -e KBC_DEVELOPERPORTAL_USERNAME \
             -e KBC_DEVELOPERPORTAL_PASSWORD \
             quay.io/keboola/developer-portal-cli-v2:latest \
-            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} kds-team.ex-ms-outlook-email-content loggerConfiguration --value="$value"
+            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK} logger --value="$value"
 else
-    echo "loggerConfiguration is empty!"
+    echo "kds-team.ex-ms-outlook-email-content logger type is empty!"
+fi
+
+echo "Updating logger configuration for ${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK}"
+value=`cat component_config_ms_outlook/loggerConfiguration.json`
+echo "$value"
+if [ ! -z "$value" ]
+then
+    docker run --rm \
+            -e KBC_DEVELOPERPORTAL_USERNAME \
+            -e KBC_DEVELOPERPORTAL_PASSWORD \
+            quay.io/keboola/developer-portal-cli-v2:latest \
+            update-app-property ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK} loggerConfiguration --value="$value"
+else
+    echo "${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK} loggerConfiguration is empty!"
 fi

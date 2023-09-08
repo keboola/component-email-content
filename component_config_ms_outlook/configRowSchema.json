@@ -1,0 +1,70 @@
+{
+  "type": "object",
+  "title": "extractor configuration",
+  "required": [
+    "query",
+    "imap_folder",
+    "date_since",
+    "download_content",
+    "download_attachments"
+  ],
+  "properties": {
+    "query": {
+      "type": "string",
+      "title": "Search query",
+      "description": "Select only emails matching the search query, e.g. (FROM \"email\" SUBJECT \"the subject\" UNSEEN) . Find more information on the syntax in the <a href=\"https://help.keboola.com/components/extractors/communication/email-imap/query-syntax/\">documentation.</a>",
+      "default": "ALL",
+      "propertyOrder": 100
+    },
+    "imap_folder": {
+      "type": "string",
+      "title": "IMAP folder",
+      "default": "",
+      "description": "Folder to get the emails from. Defaults to INBOX. For example a label in GMAIL = Folder. If left empty, default root INBOX folder is used.",
+      "propertyOrder": 110
+    },
+    "date_since": {
+      "type": "string",
+      "title": "Period from date [including].",
+      "default": "",
+      "description": " Date in YYYY-MM-DD format or dateparser string i.e. 5 days ago, 1 month ago, yesterday, etc. If left empty, all records are downloaded.",
+      "propertyOrder": 150
+    },
+    "download_content": {
+      "type": "boolean",
+      "format": "checkbox",
+      "title": "Download Content",
+      "description": "When set to true, the content of the message will be downloaded.",
+      "default": true,
+      "propertyOrder": 200
+    },
+    "download_attachments": {
+      "type": "boolean",
+      "format": "checkbox",
+      "title": "Download Attachments",
+      "description": "When set to true, also the attachments will be downloaded. By default into the File Storage. Use processors to control the behaviour.",
+      "default": false,
+      "propertyOrder": 300
+    },
+    "mark_seen": {
+      "type": "boolean",
+      "format": "checkbox",
+      "title": "Mark seen",
+      "description": "When set to true, emails that have been extracted will be marked as seen in the inbox.",
+      "default": true,
+      "propertyOrder": 350
+    },
+    "attachment_pattern": {
+      "type": "string",
+      "title": "Attachment Pattern",
+      "description": "Regex pattern to filter particular attachments. e.g. to retrieve only pdf file types use: .+\\.pdf If left empty, all attachments are downloaded.",
+      "default": ".+\\.csv",
+      "options": {
+        "dependencies": {
+          "download_attachments": true
+        }
+      },
+      "propertyOrder": 400
+    }
+  }
+}

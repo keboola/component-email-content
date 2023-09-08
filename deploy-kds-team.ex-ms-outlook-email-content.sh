@@ -36,14 +36,14 @@ export REPOSITORY=`docker run --rm  \
     -e KBC_DEVELOPERPORTAL_USERNAME \
     -e KBC_DEVELOPERPORTAL_PASSWORD \
     quay.io/keboola/developer-portal-cli-v2:latest \
-    ecr:get-repository ${KBC_DEVELOPERPORTAL_VENDOR} kds-team.ex-ms-outlook-email-content`
+    ecr:get-repository ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK}`
 
 echo "Set credentials"
 eval $(docker run --rm \
     -e KBC_DEVELOPERPORTAL_USERNAME \
     -e KBC_DEVELOPERPORTAL_PASSWORD \
     quay.io/keboola/developer-portal-cli-v2:latest \
-    ecr:get-login ${KBC_DEVELOPERPORTAL_VENDOR} kds-team.ex-ms-outlook-email-content)
+    ecr:get-login ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK})
 
 # Push to the repository
 echo "Push to the repository"
@@ -59,7 +59,7 @@ then
         -e KBC_DEVELOPERPORTAL_USERNAME \
         -e KBC_DEVELOPERPORTAL_PASSWORD \
         quay.io/keboola/developer-portal-cli-v2:latest \
-        update-app-repository ${KBC_DEVELOPERPORTAL_VENDOR} kds-team.ex-ms-outlook-email-content ${TAG} ecr ${REPOSITORY}
+        update-app-repository ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK} ${TAG} ecr ${REPOSITORY}
 else
     echo "Skipping deployment to KBC, tag ${TAG} is not allowed."
 fi
