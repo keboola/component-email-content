@@ -22,10 +22,10 @@ pipelines:
           - eval $(docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-login $KBC_DEVELOPERPORTAL_VENDOR $KBC_DEVELOPERPORTAL_APP)
           - docker push $REPOSITORY:$TAG
           # Push test image to ecr for second component "kds-team.ex-ms-outlook-email-content" that uses same repo
-          - echo 'Pushing test image to repo. [tag=${TAG}] for kds-team.ex-ms-outlook-email-content'
+          - echo "Pushing test image to repo. [tag=${TAG}] for kds-team.ex-ms-outlook-email-content"
           - export REPOSITORY=`docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-repository $KBC_DEVELOPERPORTAL_VENDOR $KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK`
           - docker tag $APP_IMAGE:latest $REPOSITORY:$TAG
-          - eval $(docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-login $KBC_DEVELOPERPORTAL_VENDOR KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK)
+          - eval $(docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-login $KBC_DEVELOPERPORTAL_VENDOR $KBC_DEVELOPERPORTAL_APP_MS_OUTLOOK)
           - docker push $REPOSITORY:$TAG
 
   branches:
