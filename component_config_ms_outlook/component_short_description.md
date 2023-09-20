@@ -1,0 +1,1 @@
+Download email content (body), metadata and/or attachments using IMAP protocol from Office 365 mailbox.

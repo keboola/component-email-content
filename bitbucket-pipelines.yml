@@ -8,6 +8,7 @@ pipelines:
           - docker
         script:
           - export APP_IMAGE=keboola-component
+          - export TAG=${BITBUCKET_BRANCH//\//-}
           - docker build . --tag=$APP_IMAGE
           - docker images
           - docker -v
@@ -15,16 +16,11 @@ pipelines:
           - echo "Running unit-tests..."
           - docker run $APP_IMAGE python -m unittest discover
           # push test image to ecr - uncomment for testing before deployment
-          - echo 'Pushing test image to repo. [tag=test]'
+          - echo "Pushing test image to repo. [tag=${TAG}]"
           - export REPOSITORY=`docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-repository $KBC_DEVELOPERPORTAL_VENDOR $KBC_DEVELOPERPORTAL_APP`
-          - docker tag $APP_IMAGE:latest $REPOSITORY:test
+          - docker tag $APP_IMAGE:latest $REPOSITORY:$TAG
           - eval $(docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-login $KBC_DEVELOPERPORTAL_VENDOR $KBC_DEVELOPERPORTAL_APP)
-          - docker push $REPOSITORY:test
-          # Push test image to ecr for second component "kds-team.ex-ms-outlook-email-content" that uses same repo
-          - echo 'Pushing test image to repo. [tag=test] for kds-team.ex-ms-outlook-email-content'
-          - export REPOSITORY=`docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-repository $KBC_DEVELOPERPORTAL_VENDOR kds-team.ex-ms-outlook-email-content`
-          - docker tag $APP_IMAGE:latest $REPOSITORY:test
-          - eval $(docker run --rm -e KBC_DEV)
+          - docker push $REPOSITORY:$TAG
 
   branches:
     master:
@@ -45,15 +41,16 @@ pipelines:
 #            - docker tag $APP_IMAGE:latest $REPOSITORY:test
 #            - eval $(docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-login $KBC_DEVELOPERPORTAL_VENDOR $KBC_DEVELOPERPORTAL_APP)
 #            - docker push $REPOSITORY:test
+            - export COMPONENT_CONFIG_FOLDER="component_config"
             - chmod +x ./scripts/update_dev_portal_properties.sh
             - ./scripts/update_dev_portal_properties.sh
             # Update Dev properties for second component "kds-team.ex-ms-outlook-email-content" that uses same repo
-            - chmod +x ./scripts/update_dev_portal_properties_ms_outlook.sh
-            - ./scripts/update_dev_portal_properties_ms_outlook.sh
+            - export COMPONENT_CONFIG_FOLDER="component_config_ms_outlook"
+            - ./scripts/update_dev_portal_properties.sh
   tags:
     '*':
       - step:
-          deployment: production
+          deployment: ex-email-content
           script:
             - export APP_IMAGE=keboola-component
             - docker build . --tag=$APP_IMAGE
@@ -72,10 +69,29 @@ pipelines:
             # - docker run --rm -e KBC_STORAGE_TOKEN quay.io/keboola/syrup-cli:latest run-job $KBC_DEVELOPERPORTAL_APP $KBC_CONFIG_1 test
             - chmod +x ./scripts/update_dev_portal_properties.sh
             - chmod +x ./deploy.sh
+            - export COMPONENT_CONFIG_FOLDER="component_config"
             - ./scripts/update_dev_portal_properties.sh
             - ./deploy.sh
+      - step:
+          deployment: ex-ms-outlook-email-content
+          script:
+            - export APP_IMAGE=$APP_IMAGE
+            - export TAG=${BITBUCKET_BRANCH//\//-}
+            - docker build . --tag=$APP_IMAGE
+            - docker images
+            - docker -v
+            - docker run $APP_IMAGE flake8 /code/ --config=/code/flake8.cfg
+            - echo "Running unit-tests..."
+            - docker run $APP_IMAGE python -m unittest discover
+            # push test image to ecr - uncomment for testing before deployment
+            # - echo "Pushing test image to repo. [tag=${TAG}]"
+            # - export REPOSITORY=`docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-repository $KBC_DEVELOPERPORTAL_VENDOR $KBC_DEVELOPERPORTAL_APP_SNFL`
+            # - docker tag $APP_IMAGE:latest $REPOSITORY:$TAG
+            # - eval $(docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-login $KBC_DEVELOPERPORTAL_VENDOR $KBC_DEVELOPERPORTAL_APP_SNFL)
+            # - docker push $REPOSITORY:$TAG
             # Deploy second component "kds-team.ex-ms-outlook-email-content" that uses same repo
-            - chmod +x ./scripts/update_dev_portal_properties_ms_outlook.sh
-            - chmod +x ./deploy-kds-team.ex-ms-outlook-email-content.sh
-            - ./scripts/update_dev_portal_properties_ms_outlook.sh
-            - ./deploy-kds-team.ex-ms-outlook-email-content.sh
+            - chmod +x ./scripts/update_dev_portal_properties.sh
+            - chmod +x ./deploy.sh
+            - export COMPONENT_CONFIG_FOLDER="component_config_ms_outlook"
+            - ./scripts/update_dev_portal_properties.sh
+            - ./deploy.sh

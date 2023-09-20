@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "title": "IMAP Settings",
+  "required": [
+    "user_name",
+    "host",
+    "port"
+  ],
+  "properties": {
+    "user_name": {
+      "type": "string",
+      "title": "Email Address",
+      "propertyOrder": 100
+    },
+    "host": {
+      "type": "string",
+      "title": "IMAP Host",
+      "propertyOrder": 300
+    },
+    "port": {
+      "type": "number",
+      "title": "IMAP Port",
+      "default": 993,
+      "propertyOrder": 400
+    }
+  }
+}
