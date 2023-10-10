@@ -43,7 +43,7 @@ eval $(docker run --rm \
     -e KBC_DEVELOPERPORTAL_USERNAME \
     -e KBC_DEVELOPERPORTAL_PASSWORD \
     quay.io/keboola/developer-portal-cli-v2:latest \
-    ecr:get-login ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP})
+    ecr:get-login ${KBC_DEVELOPERPORTAL_VENDOR} kds-team.ex-email-content)
 
 # Push to the repository
 echo "Push to the repository"
