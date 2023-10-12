@@ -111,9 +111,16 @@ class Component(ComponentBase):
             if 'SEARCH command error' in str(e):
                 raise UserException(f'Invalid search query, please check the syntax: "{query}"')
         except UnicodeError as e:
-            raise UserException('Encountered UnicodeError - This is a common problem when using queries with '
-                                'diacritics or other special characters. \n '
-                                'Please remove special characters from your query.') from e
+            raise UserException(
+                "UnicodeError Encountered\n\n"
+                "An issue commonly associated with the use of diacritics or special "
+                "characters in queries has been detected.\n\n"
+                "To resolve this:\n"
+                "- Remove special characters from your query.\n"
+                "- Filter by 'SENDER' or 'KEYWORD'.\n\n"
+                "For detailed guidance on IMAP query options, visit:\n"
+                "https://help.keboola.com/components/extractors/communication/email-imap/query-syntax/"
+            ) from e
 
         logging.info(f"Processed {count} messages in total.")
         logging.info(f"Processed {len(results) - 1} attachments matching the pattern in total.")
