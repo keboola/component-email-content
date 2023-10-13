@@ -110,6 +110,17 @@ class Component(ComponentBase):
         except imaplib.IMAP4.error as e:
             if 'SEARCH command error' in str(e):
                 raise UserException(f'Invalid search query, please check the syntax: "{query}"')
+        except UnicodeError as e:
+            raise UserException(
+                "UnicodeError Encountered\n\n"
+                "An issue commonly associated with the use of diacritics or special "
+                "characters in queries has been detected.\n\n"
+                "To resolve this:\n"
+                "- Remove special characters from your query.\n"
+                "- Filter by 'SENDER' or 'KEYWORD'.\n\n"
+                "For detailed guidance on IMAP query options, visit:\n"
+                "https://help.keboola.com/components/extractors/communication/email-imap/query-syntax/"
+            ) from e
 
         logging.info(f"Processed {count} messages in total.")
         logging.info(f"Processed {len(results) - 1} attachments matching the pattern in total.")
