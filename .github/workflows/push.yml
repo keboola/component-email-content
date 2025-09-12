@@ -1,11 +1,10 @@
 name: Keboola Component Build & Deploy Pipeline
 on:
   push:
-    branches:
-      - 'feature/*'
-      - 'bug/*'
+    branches-ignore:
+      - main
     tags:
-      - '*' # Skip the workflow on the main branch without tags
+      - "*"  # Skip the workflow on the main branch without tags
 
 concurrency: ci-${{ github.ref }} # to avoid tag collisions in the ECR
 env:
@@ -162,6 +161,9 @@ jobs:
       - tests-kbc
     env:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    strategy:
+      matrix:
+        app: ['kds-team.ex-email-content', 'kds-team.ex-ms-outlook-email-content']
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -185,7 +187,7 @@ jobs:
         uses: keboola/action-push-to-ecr@master
         with:
           vendor: ${{ env.KBC_DEVELOPERPORTAL_VENDOR }}
-          app_id: ${{ env.KBC_DEVELOPERPORTAL_APP }}
+          app_id: ${{ matrix.app }}
           username: ${{ env.KBC_DEVELOPERPORTAL_USERNAME }}
           password: ${{ secrets.KBC_DEVELOPERPORTAL_PASSWORD }}
           tag: ${{ needs.push_event_info.outputs.app_image_tag }}
@@ -202,12 +204,15 @@ jobs:
       - push
     if: needs.push_event_info.outputs.is_deploy_ready == 'true'
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: ['kds-team.ex-email-content', 'kds-team.ex-ms-outlook-email-content']
     steps:
       - name: Set Developer Portal Tag
         uses: keboola/action-set-tag-developer-portal@master
         with:
           vendor: ${{ env.KBC_DEVELOPERPORTAL_VENDOR }}
-          app_id: ${{ env.KBC_DEVELOPERPORTAL_APP }}
+          app_id: ${{ matrix.app }}
           username: ${{ env.KBC_DEVELOPERPORTAL_USERNAME }}
           password: ${{ secrets.KBC_DEVELOPERPORTAL_PASSWORD }}
           tag: ${{ needs.push_event_info.outputs.app_image_tag }}
@@ -222,11 +227,16 @@ jobs:
       - push
     runs-on: ubuntu-latest
     if: needs.push_event_info.outputs.is_deploy_ready == 'true'
+    strategy:
+      matrix:
+        app: ['kds-team.ex-email-content', 'kds-team.ex-ms-outlook-email-content']
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Update developer portal properties
+        env:
+          KBC_DEVELOPERPORTAL_APP: ${{ matrix.app }}
         run: |
           chmod +x scripts/developer_portal/*.sh
           scripts/developer_portal/update_properties.sh
