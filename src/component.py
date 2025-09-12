@@ -132,8 +132,9 @@ class Component(ComponentBase):
         logging.info("Extraction finished.")
 
     def get_access_token(self, refresh_token):
+        authority = self.configuration.image_parameters.get("authority") or "https://login.microsoftonline.com/common"
         app = msal.ConfidentialClientApplication(self.configuration.oauth_credentials.appKey,
-                                                 authority="https://login.microsoftonline.com/common",
+                                                 authority=authority,
                                                  client_credential=self.configuration.oauth_credentials.appSecret)
 
         result = app.acquire_token_by_refresh_token(refresh_token, MS_OAUTH_SCOPE)

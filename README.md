@@ -11,6 +11,7 @@ This component allows you to extract email body and other metadata using IMAP pr
 
 # Functionality notes
 
+NOTE: The default authority https://login.microsoftonline.com/common can be overwritten by authority parameter in image_parameters.
 
 # Prerequisites
 
