@@ -167,9 +167,11 @@ class Component(ComponentBase):
             self._imap_client = MailBox(params[KEY_HOST], params.get(KEY_PORT, 993)).xoauth2(params[KEY_USER],
                                                                                              access_token)
         except imaplib.IMAP4.error as e:
-            raise UserException("Failed to log in to mailbox, the username is invalid.") from e
+            # raise UserException("Failed to log in to mailbox, the username is invalid.") from e
+            raise e
         except socket.gaierror as e:
-            raise UserException("Failed to log in to mailbox, the email host is invalid.") from e
+            # raise UserException("Failed to log in to mailbox, the email host is invalid.") from e
+            raise e
 
         imap_folder = params.get(KEY_IMAP_FOLDER, 'INBOX') or 'INBOX'
         self._set_client_inbox(imap_folder)
