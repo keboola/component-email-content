@@ -1,0 +1,17 @@
+[project]
+name = "component-email-content"
+dynamic = ["version"]
+requires-python = ">=3.13"
+dependencies = [
+    "freezegun>=1.5.5",
+    "imap-tools>=1.11.0",
+    "keboola-component>=1.6.13",
+    "keboola-utils>=1.1.0",
+    "mock>=5.2.0",
+    "msal>=1.34.0",
+]
+
+[dependency-groups]
+dev = [
+    "flake8>=7.3.0",
+]
