@@ -2,8 +2,6 @@
   "type": "object",
   "title": "extractor configuration",
   "required": [
-    "query",
-    "imap_folder",
     "date_since",
     "download_content",
     "download_attachments"
@@ -11,16 +9,23 @@
   "properties": {
     "query": {
       "type": "string",
-      "title": "Search query",
-      "description": "Select only emails matching the search query, e.g. (FROM \"email\" SUBJECT \"the subject\" UNSEEN) . Find more information on the syntax in the <a href=\"https://help.keboola.com/components/extractors/communication/email-imap/query-syntax/\">documentation.</a>",
+      "title": "IMAP Search Query",
+      "description": "IMAP search query (used with IMAP connection method). e.g. (FROM \"email\" SUBJECT \"the subject\" UNSEEN). Find more information on the syntax in the <a href=\"https://help.keboola.com/components/extractors/communication/email-imap/query-syntax/\">documentation.</a>",
       "default": "ALL",
       "propertyOrder": 100
     },
+    "graph_filter": {
+      "type": "string",
+      "title": "Graph API Filter",
+      "description": "OData $filter expression (used with Graph API connection method). e.g. from/emailAddress/address eq 'someone@example.com' and hasAttachments eq true. Leave empty to fetch all messages. See <a href=\"https://learn.microsoft.com/en-us/graph/api/user-list-messages?view=graph-rest-1.0\">Microsoft Graph API docs</a> for syntax.",
+      "default": "",
+      "propertyOrder": 105
+    },
     "imap_folder": {
       "type": "string",
-      "title": "IMAP folder",
+      "title": "Mail Folder",
       "default": "",
-      "description": "Folder to get the emails from. Defaults to INBOX. For example a label in GMAIL = Folder. If left empty, default root INBOX folder is used.",
+      "description": "Folder to get the emails from. Defaults to INBOX. For IMAP: use folder path (e.g. INBOX, Sent Items). For Graph API: use well-known folder names (inbox, sentitems, drafts, deleteditems) or folder display name. If left empty, default Inbox folder is used.",
       "propertyOrder": 110
     },
     "date_since": {
@@ -50,7 +55,7 @@
       "type": "boolean",
       "format": "checkbox",
       "title": "Mark seen",
-      "description": "When set to true, emails that have been extracted will be marked as seen in the inbox.",
+      "description": "When set to true, emails that have been extracted will be marked as seen/read.",
       "default": true,
       "propertyOrder": 350
     },
