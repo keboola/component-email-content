@@ -122,8 +122,9 @@ class Component(ComponentBase):
         Returns:
             Refresh token string
         """
-        state = self.get_state_file()
-        return state.get(KEY_STATE_REFRESH_TOKEN) or self.configuration.oauth_credentials.data.get("refresh_token")
+        state = self.get_state_file() or {}
+        data = self.configuration.oauth_credentials.data
+        return state.get(KEY_STATE_REFRESH_TOKEN) or data.get("refresh_token")
 
 
 """
