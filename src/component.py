@@ -64,6 +64,9 @@ class Component(ComponentBase):
         # Parse and validate configuration
         config = Configuration(**self.configuration.parameters)
 
+        if self.use_oauth_login and not self.configuration.oauth_credentials:
+            raise UserException("Component is not authorized. Please authorize the component in Keboola.")
+
         output_table = self.create_out_table_definition("emails.csv", primary_key=["pk"], incremental=True)
 
         if self._use_graph_api:
