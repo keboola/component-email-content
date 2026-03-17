@@ -22,6 +22,7 @@ class Configuration(BaseModel):
 
     query: str = Field(default="(ALL)")
     graph_filter: str = Field(default="")
+    graph_search: str = Field(default="")
     imap_folder: str = Field(default="")
     date_since: str = Field(default="")
     download_content: bool = Field(default=True)
@@ -45,6 +46,23 @@ class Configuration(BaseModel):
     def validate_connection_requirements(self) -> "Configuration":
         if self.connection_method == CONNECTION_METHOD_IMAP and not self.host:
             raise ValueError("host is required when using IMAP connection method")
+
+        if self.connection_method == CONNECTION_METHOD_GRAPH and self.graph_search:
+            conflicting = []
+            if self.graph_filter:
+                conflicting.append("Graph API Filter")
+            if self.date_since:
+                conflicting.append("Period from date")
+            if conflicting:
+                conflicting_str = " and ".join(conflicting)
+                raise ValueError(
+                    f"Graph API Search cannot be combined with {conflicting_str}. "
+                    "As per Microsoft Graph known issues: 'Query parameters specified in a request "
+                    "might fail silently. This can be true for unsupported query parameters and for "
+                    "unsupported combinations of query parameters.' "
+                    "See: https://learn.microsoft.com/en-us/graph/known-issues"
+                    "#some-limitations-apply-to-query-parameters"
+                )
 
         if not self.download_content and not self.download_attachments:
             raise ValueError(

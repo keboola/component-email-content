@@ -137,24 +137,32 @@ class GraphEmailFetcher:
         """Build OData query parameters for the Graph API messages endpoint."""
         query_params = {
             "$top": str(GRAPH_PAGE_SIZE),
-            "$orderby": "receivedDateTime desc",
             "$select": "id,subject,from,toRecipients,receivedDateTime,hasAttachments,isRead",
         }
 
-        # Build $filter from graph_filter parameter and date_since
-        filters = []
+        if self.config.graph_search:
+            # $search uses KQL syntax; $orderby and $filter are incompatible with $search
+            # on the messages endpoint. See: https://learn.microsoft.com/en-us/graph/
+            # search-query-parameter#use-search-on-message-collections
+            search_value = self.config.graph_search.replace('"', "'")
+            query_params["$search"] = f'"{search_value}"'
+        else:
+            query_params["$orderby"] = "receivedDateTime desc"
 
-        graph_filter = self.config.graph_filter
-        if graph_filter:
-            filters.append(graph_filter)
+            # Build $filter from graph_filter parameter and date_since
+            filters = []
 
-        date_since_str = self.config.date_since
-        if date_since_str:
-            since, _ = parse_datetime_interval(date_since_str, "now", strformat="%Y-%m-%dT00:00:00Z")
-            filters.append(f"receivedDateTime ge {since}")
+            graph_filter = self.config.graph_filter
+            if graph_filter:
+                filters.append(graph_filter)
 
-        if filters:
-            query_params["$filter"] = " and ".join(filters)
+            date_since_str = self.config.date_since
+            if date_since_str:
+                since, _ = parse_datetime_interval(date_since_str, "now", strformat="%Y-%m-%dT00:00:00Z")
+                filters.append(f"receivedDateTime ge {since}")
+
+            if filters:
+                query_params["$filter"] = " and ".join(filters)
 
         return query_params
 

@@ -10,16 +10,32 @@
     "query": {
       "type": "string",
       "title": "IMAP Search Query",
-      "description": "IMAP search query (used with IMAP connection method). e.g. (FROM \"email\" SUBJECT \"the subject\" UNSEEN). Find more information on the syntax in the <a href=\"https://help.keboola.com/components/extractors/communication/email-imap/query-syntax/\">documentation.</a>",
+      "description": "IMAP search query (used with IMAP connection method). Find more information on the syntax in the <a href=\"https://help.keboola.com/components/extractors/communication/email-imap/query-syntax/\">documentation.</a>",
       "default": "ALL",
+      "options": {
+        "tooltip": "e.g. (FROM \"email\" SUBJECT \"the subject\" UNSEEN)"
+      },
       "propertyOrder": 100
     },
     "graph_filter": {
       "type": "string",
       "title": "Graph API Filter",
-      "description": "OData $filter expression (used with Graph API connection method). e.g. from/emailAddress/address eq 'someone@example.com' and hasAttachments eq true. Leave empty to fetch all messages. See <a href=\"https://learn.microsoft.com/en-us/graph/api/user-list-messages?view=graph-rest-1.0\">Microsoft Graph API docs</a> for syntax.",
+      "description": "OData $filter expression (used with Graph API connection method). Can be combined with Period from date. Leave empty to fetch all messages. See <a href=\"https://learn.microsoft.com/en-us/graph/api/user-list-messages?view=graph-rest-1.0\">Microsoft Graph API docs</a> for syntax.",
       "default": "",
+      "options": {
+        "tooltip": "Supports exact matches only, e.g. from/emailAddress/address eq 'someone@example.com' or subject eq 'exact subject' or hasAttachments eq true."
+      },
       "propertyOrder": 105
+    },
+    "graph_search": {
+      "type": "string",
+      "title": "Graph API Search (KQL)",
+      "description": "KQL search expression for the Graph API (used with Graph API connection method). <strong>Cannot be combined with Graph API Filter or Period from date.</strong> As per <a href=\"https://learn.microsoft.com/en-us/graph/known-issues#some-limitations-apply-to-query-parameters\">Microsoft Graph known issues</a>: <em>\"Query parameters specified in a request might fail silently. This can be true for unsupported query parameters and for unsupported combinations of query parameters.\"</em> Returns up to 1,000 results.",
+      "default": "",
+      "options": {
+        "tooltip": "Supports partial/keyword search across subject, body, and from by default. Use property-scoped syntax for specific fields, e.g. subject:weekly or from:someone@example.com."
+      },
+      "propertyOrder": 107
     },
     "imap_folder": {
       "type": "string",
@@ -30,9 +46,9 @@
     },
     "date_since": {
       "type": "string",
-      "title": "Period from date [including].",
+      "title": "Period from date (including)",
       "default": "",
-      "description": " Date in YYYY-MM-DD format or dateparser string i.e. 5 days ago, 1 month ago, yesterday, etc. If left empty, all records are downloaded.",
+      "description": "Date in YYYY-MM-DD format or dateparser string i.e. 5 days ago, 1 month ago, yesterday, etc. If left empty, all records are downloaded.",
       "propertyOrder": 150
     },
     "download_content": {
