@@ -23,7 +23,7 @@
       "description": "OData $filter expression (used with Graph API connection method). Can be combined with Period from date. Leave empty to fetch all messages. See <a href=\"https://learn.microsoft.com/en-us/graph/api/user-list-messages?view=graph-rest-1.0\">Microsoft Graph API docs</a> for syntax.",
       "default": "",
       "options": {
-        "tooltip": "Supports exact matches only, e.g. from/emailAddress/address eq 'someone@example.com' or subject eq 'exact subject' or hasAttachments eq true."
+        "tooltip": "Supports exact matches with eq, e.g. from/emailAddress/address eq 'someone@example.com' or subject eq 'exact subject' or hasAttachments eq true. Note: contains() on subject/body is NOT supported and will return HTTP 400."
       },
       "propertyOrder": 105
     },
@@ -33,7 +33,7 @@
       "description": "KQL search expression for the Graph API (used with Graph API connection method). <strong>Cannot be combined with Graph API Filter or Period from date.</strong> As per <a href=\"https://learn.microsoft.com/en-us/graph/known-issues#some-limitations-apply-to-query-parameters\">Microsoft Graph known issues</a>: <em>\"Query parameters specified in a request might fail silently. This can be true for unsupported query parameters and for unsupported combinations of query parameters.\"</em> Returns up to 1,000 results.",
       "default": "",
       "options": {
-        "tooltip": "Supports partial/keyword search across subject, body, and from by default. Use property-scoped syntax for specific fields, e.g. subject:weekly or from:someone@example.com."
+        "tooltip": "Keyword search: subject:weekly, from:someone@example.com (substring match). Exact phrase: subject:\"my exact phrase\". Date range: received:2026-01-01..2026-01-31. Combine all: from:sender subject:keyword received:2026-01-01..2026-03-18. Note: relative dates (received:this week) do NOT work."
       },
       "propertyOrder": 107
     },
@@ -48,7 +48,7 @@
       "type": "string",
       "title": "Period from date (including)",
       "default": "",
-      "description": "Date in YYYY-MM-DD format or dateparser string i.e. 5 days ago, 1 month ago, yesterday, etc. If left empty, all records are downloaded.",
+      "description": "Date in YYYY-MM-DD format or dateparser string i.e. 5 days ago, 1 month ago, yesterday, etc. If left empty, all records are downloaded. Cannot be combined with Graph API Search — use <code>received:YYYY-MM-DD..YYYY-MM-DD</code> date syntax within the KQL expression instead.",
       "propertyOrder": 150
     },
     "download_content": {
