@@ -147,8 +147,6 @@ class GraphEmailFetcher:
             search_value = self.config.graph_search.replace('"', "'")
             query_params["$search"] = f'"{search_value}"'
         else:
-            query_params["$orderby"] = "receivedDateTime desc"
-
             # Build $filter from graph_filter parameter and date_since
             filters = []
 
@@ -163,6 +161,15 @@ class GraphEmailFetcher:
 
             if filters:
                 query_params["$filter"] = " and ".join(filters)
+
+            # $orderby is only safe when $filter uses receivedDateTime alone.
+            # Filtering by other properties (e.g. from/emailAddress/address)
+            # combined with $orderby triggers HTTP 400: "The restriction or sort
+            # order is too complex for this operation."
+            # See: https://learn.microsoft.com/en-us/graph/api/user-list-messages
+            # #using-filter-and-orderby-in-the-same-query
+            if not graph_filter:
+                query_params["$orderby"] = "receivedDateTime desc"
 
         return query_params
 
