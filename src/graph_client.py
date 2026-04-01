@@ -264,7 +264,8 @@ class GraphEmailFetcher:
 
         # Try to find the folder by display name
         url = f"{GRAPH_API_BASE}/me/mailFolders"
-        params = {"$filter": f"displayName eq '{folder_name}'"}
+        escaped = folder_name.replace("'", "''")
+        params = {"$filter": f"displayName eq '{escaped}'"}
         try:
             response = self._request("GET", url, params=params)
             folders = response.json().get("value", [])
