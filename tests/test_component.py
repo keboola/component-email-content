@@ -114,17 +114,17 @@ class _GraphTestBase(unittest.TestCase):
 class TestGraphApiRowBuilder(_GraphTestBase):
     """Test that Graph API produces rows with the same columns as IMAP."""
 
-    def test_build_email_row_from_graph_has_correct_columns(self):
+    def test_build_email_row_has_correct_columns(self):
         fetcher = self._create_fetcher()
-        row = fetcher._build_email_row_from_graph(SAMPLE_GRAPH_MESSAGE, [SAMPLE_GRAPH_ATTACHMENT])
+        row = fetcher._build_email_row(SAMPLE_GRAPH_MESSAGE, [SAMPLE_GRAPH_ATTACHMENT])
 
         for col in RESULT_COLUMNS:
             self.assertIn(col, row, f"Missing column: {col}")
         self.assertEqual(set(row.keys()), set(RESULT_COLUMNS))
 
-    def test_build_email_row_from_graph_values(self):
+    def test_build_email_row_values(self):
         fetcher = self._create_fetcher()
-        row = fetcher._build_email_row_from_graph(SAMPLE_GRAPH_MESSAGE, [SAMPLE_GRAPH_ATTACHMENT])
+        row = fetcher._build_email_row(SAMPLE_GRAPH_MESSAGE, [SAMPLE_GRAPH_ATTACHMENT])
 
         self.assertEqual(row["uid"], "AAMkAGU_test_message_id")
         self.assertEqual(row["mail_box"], "test@example.com")
@@ -139,16 +139,16 @@ class TestGraphApiRowBuilder(_GraphTestBase):
         self.assertIsInstance(row["pk"], str)
         self.assertEqual(len(row["pk"]), 32)  # MD5 hex digest
 
-    def test_build_email_row_from_graph_inline_attachments_excluded(self):
+    def test_build_email_row_inline_attachments_excluded(self):
         fetcher = self._create_fetcher()
-        row = fetcher._build_email_row_from_graph(
+        row = fetcher._build_email_row(
             SAMPLE_GRAPH_MESSAGE,
             [SAMPLE_GRAPH_ATTACHMENT, SAMPLE_GRAPH_INLINE_ATTACHMENT],
         )
         self.assertEqual(row["number_of_attachments"], 1)
         self.assertEqual(row["attachment_names"], ["report.csv"])
 
-    def test_build_email_row_from_graph_empty_message(self):
+    def test_build_email_row_empty_message(self):
         fetcher = self._create_fetcher()
         empty_msg = {
             "id": "empty_msg_id",
@@ -162,7 +162,7 @@ class TestGraphApiRowBuilder(_GraphTestBase):
             "internetMessageHeaders": [],
             "_body_text": "",
         }
-        row = fetcher._build_email_row_from_graph(empty_msg, [])
+        row = fetcher._build_email_row(empty_msg, [])
 
         self.assertEqual(row["from"], "")
         self.assertEqual(row["to"], "")
@@ -171,9 +171,9 @@ class TestGraphApiRowBuilder(_GraphTestBase):
         self.assertEqual(row["number_of_attachments"], 0)
         self.assertEqual(row["attachment_names"], [])
 
-    def test_build_email_row_from_graph_headers_json(self):
+    def test_build_email_row_headers_json(self):
         fetcher = self._create_fetcher()
-        row = fetcher._build_email_row_from_graph(SAMPLE_GRAPH_MESSAGE, [])
+        row = fetcher._build_email_row(SAMPLE_GRAPH_MESSAGE, [])
 
         headers = json.loads(row["headers"])
         self.assertEqual(headers["From"], "sender@example.com")
@@ -186,14 +186,14 @@ class TestGraphApiPkBuilder(_GraphTestBase):
     def test_pk_is_deterministic(self):
         fetcher = self._create_fetcher()
         from_addr, to_addrs, _, _, size = fetcher._extract_message_fields(SAMPLE_GRAPH_MESSAGE)
-        pk1 = fetcher._build_email_pk_from_graph(SAMPLE_GRAPH_MESSAGE, from_addr, to_addrs, size)
-        pk2 = fetcher._build_email_pk_from_graph(SAMPLE_GRAPH_MESSAGE, from_addr, to_addrs, size)
+        pk1 = fetcher._build_email_pk(SAMPLE_GRAPH_MESSAGE, from_addr, to_addrs, size)
+        pk2 = fetcher._build_email_pk(SAMPLE_GRAPH_MESSAGE, from_addr, to_addrs, size)
         self.assertEqual(pk1, pk2)
 
     def test_pk_is_md5_hex(self):
         fetcher = self._create_fetcher()
         from_addr, to_addrs, _, _, size = fetcher._extract_message_fields(SAMPLE_GRAPH_MESSAGE)
-        pk = fetcher._build_email_pk_from_graph(SAMPLE_GRAPH_MESSAGE, from_addr, to_addrs, size)
+        pk = fetcher._build_email_pk(SAMPLE_GRAPH_MESSAGE, from_addr, to_addrs, size)
         self.assertEqual(len(pk), 32)
         int(pk, 16)
 
@@ -204,8 +204,8 @@ class TestGraphApiPkBuilder(_GraphTestBase):
 
         from_addr1, to_addrs1, _, _, size1 = fetcher._extract_message_fields(SAMPLE_GRAPH_MESSAGE)
         from_addr2, to_addrs2, _, _, size2 = fetcher._extract_message_fields(msg2)
-        pk1 = fetcher._build_email_pk_from_graph(SAMPLE_GRAPH_MESSAGE, from_addr1, to_addrs1, size1)
-        pk2 = fetcher._build_email_pk_from_graph(msg2, from_addr2, to_addrs2, size2)
+        pk1 = fetcher._build_email_pk(SAMPLE_GRAPH_MESSAGE, from_addr1, to_addrs1, size1)
+        pk2 = fetcher._build_email_pk(msg2, from_addr2, to_addrs2, size2)
         self.assertNotEqual(pk1, pk2)
 
 
@@ -214,7 +214,7 @@ class TestGraphApiQueryParams(_GraphTestBase):
 
     def test_build_params_no_filter(self):
         fetcher = self._create_fetcher({"graph_filter": "", "date_since": ""})
-        params = fetcher._build_graph_query_params()
+        params = fetcher._build_query_params()
 
         self.assertEqual(params["$top"], "100")
         self.assertIn("$orderby", params)
@@ -227,7 +227,7 @@ class TestGraphApiQueryParams(_GraphTestBase):
                 "date_since": "",
             }
         )
-        params = fetcher._build_graph_query_params()
+        params = fetcher._build_query_params()
 
         self.assertIn("$filter", params)
         self.assertIn("from/emailAddress/address eq 'test@example.com'", params["$filter"])
@@ -235,7 +235,7 @@ class TestGraphApiQueryParams(_GraphTestBase):
     @freeze_time("2024-06-15")
     def test_build_params_with_date_since(self):
         fetcher = self._create_fetcher({"graph_filter": "", "date_since": "2024-01-01"})
-        params = fetcher._build_graph_query_params()
+        params = fetcher._build_query_params()
 
         self.assertIn("$filter", params)
         self.assertIn("receivedDateTime ge", params["$filter"])
@@ -248,7 +248,7 @@ class TestGraphApiQueryParams(_GraphTestBase):
                 "date_since": "2024-01-01",
             }
         )
-        params = fetcher._build_graph_query_params()
+        params = fetcher._build_query_params()
 
         self.assertIn("$filter", params)
         self.assertIn("hasAttachments eq true", params["$filter"])

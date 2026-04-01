@@ -76,7 +76,7 @@ class GraphEmailFetcher:
         messages_url = f"{GRAPH_API_BASE}/me/mailFolders/{graph_folder}/messages"
 
         # Build query parameters
-        query_params = self._build_graph_query_params()
+        query_params = self._build_query_params()
 
         count = 0
         results = [output_table]
@@ -90,33 +90,33 @@ class GraphEmailFetcher:
 
             while url:
                 if first_request:
-                    response = self._graph_request("GET", url, params=query_params)
+                    response = self._request("GET", url, params=query_params)
                     first_request = False
                 else:
                     # Pagination: @odata.nextLink already contains all query params
-                    response = self._graph_request("GET", url)
+                    response = self._request("GET", url)
 
                 data = response.json()
                 messages = data.get("value", [])
 
                 for msg_data in messages:
                     # Fetch full message with headers and body (both text and html)
-                    msg_detail = self._fetch_graph_message_detail(msg_data["id"])
+                    msg_detail = self._fetch_message_detail(msg_data["id"])
 
                     # Fetch attachments metadata
                     attachments = []
-                    if msg_detail.get("hasAttachments", False) or download_attachments:
-                        attachments = self._fetch_graph_attachments_metadata(msg_data["id"])
+                    if msg_detail.get("hasAttachments"):
+                        attachments = self._fetch_attachments_metadata(msg_data["id"])
 
                     if download_content:
-                        row = self._build_email_row_from_graph(msg_detail, attachments)
+                        row = self._build_email_row(msg_detail, attachments)
                         writer.writerow(row)
 
                     if download_attachments:
-                        results.extend(self._write_graph_attachments(msg_data["id"], msg_detail, attachments))
+                        results.extend(self._download_and_write_attachments(msg_data["id"], msg_detail, attachments))
 
                     if mark_seen and not msg_detail.get("isRead", False):
-                        self._graph_mark_as_read(msg_data["id"])
+                        self._mark_as_read(msg_data["id"])
 
                     count += 1
                     if count % 10 == 0:
@@ -133,7 +133,7 @@ class GraphEmailFetcher:
 
         return results
 
-    def _build_graph_query_params(self):
+    def _build_query_params(self):
         """Build OData query parameters for the Graph API messages endpoint."""
         query_params = {
             "$top": str(GRAPH_PAGE_SIZE),
@@ -173,7 +173,7 @@ class GraphEmailFetcher:
 
         return query_params
 
-    def _fetch_graph_message_detail(self, message_id):
+    def _fetch_message_detail(self, message_id):
         """Fetch a single message with full body (both text and html) and headers."""
         url = f"{GRAPH_API_BASE}/me/messages/{message_id}"
         params = {
@@ -183,11 +183,11 @@ class GraphEmailFetcher:
         }
 
         # First fetch HTML body (default)
-        response_html = self._graph_request("GET", url, params=params)
+        response_html = self._request("GET", url, params=params)
         msg_html = response_html.json()
 
         # Then fetch text body
-        response_text = self._graph_request(
+        response_text = self._request(
             "GET",
             url,
             params=params,
@@ -199,18 +199,18 @@ class GraphEmailFetcher:
         msg_html["_body_text"] = msg_text.get("body", {}).get("content", "")
         return msg_html
 
-    def _fetch_graph_attachments_metadata(self, message_id):
+    def _fetch_attachments_metadata(self, message_id):
         """Fetch attachment metadata for a message."""
         url = f"{GRAPH_API_BASE}/me/messages/{message_id}/attachments"
         params = {"$select": "id,name,contentType,size,isInline"}
-        response = self._graph_request("GET", url, params=params)
+        response = self._request("GET", url, params=params)
         return response.json().get("value", [])
 
-    def _write_graph_attachments(self, message_id, msg_detail, attachments) -> list[FileDefinition]:
+    def _download_and_write_attachments(self, message_id, msg_detail, attachments) -> list[FileDefinition]:
         """Download and write Graph API attachments, filtered by pattern."""
         from_addr, to_addrs, _, _, size = self._extract_message_fields(msg_detail)
         pattern = self.config.attachment_pattern
-        email_pk = self._build_email_pk_from_graph(msg_detail, from_addr, to_addrs, size)
+        email_pk = self._build_email_pk(msg_detail, from_addr, to_addrs, size)
 
         results = []
         for att in attachments:
@@ -226,7 +226,7 @@ class GraphEmailFetcher:
 
             # Fetch full attachment content
             att_url = f"{GRAPH_API_BASE}/me/messages/{message_id}/attachments/{att['id']}"
-            att_response = self._graph_request("GET", att_url)
+            att_response = self._request("GET", att_url)
             att_data = att_response.json()
 
             content_bytes = base64.b64decode(att_data.get("contentBytes", ""))
@@ -249,10 +249,10 @@ class GraphEmailFetcher:
 
         return results
 
-    def _graph_mark_as_read(self, message_id):
+    def _mark_as_read(self, message_id):
         """Mark a message as read via Graph API."""
         url = f"{GRAPH_API_BASE}/me/messages/{message_id}"
-        self._graph_request("PATCH", url, json_body={"isRead": True})
+        self._request("PATCH", url, json_body={"isRead": True})
 
     def _resolve_graph_folder(self, folder_name):
         """Resolve a folder name to a Graph API well-known folder name or folder ID."""
@@ -266,7 +266,7 @@ class GraphEmailFetcher:
         url = f"{GRAPH_API_BASE}/me/mailFolders"
         params = {"$filter": f"displayName eq '{folder_name}'"}
         try:
-            response = self._graph_request("GET", url, params=params)
+            response = self._request("GET", url, params=params)
             folders = response.json().get("value", [])
             if folders:
                 return folders[0]["id"]
@@ -292,7 +292,7 @@ class GraphEmailFetcher:
             }
         )
 
-    def _graph_request(self, method, url, params=None, json_body=None, extra_headers=None):
+    def _request(self, method, url, params=None, json_body=None, extra_headers=None):
         """Make an authenticated Graph API request with error handling."""
         headers = {}
         if extra_headers:
@@ -352,7 +352,7 @@ class GraphEmailFetcher:
 
         return from_addr, to_addrs, body_html, body_text, size
 
-    def _build_email_row_from_graph(self, msg, attachments):
+    def _build_email_row(self, msg, attachments):
         """Build an email row dict from a Graph API message response, matching IMAP output format."""
         from_addr, to_addrs, body_html, body_text, size = self._extract_message_fields(msg)
 
@@ -373,7 +373,7 @@ class GraphEmailFetcher:
         att_names = [a.get("name", "") for a in attachments if not a.get("isInline", False)]
 
         return {
-            "pk": self._build_email_pk_from_graph(msg, from_addr, to_addrs, size),
+            "pk": self._build_email_pk(msg, from_addr, to_addrs, size),
             "uid": msg.get("id", ""),
             "mail_box": self.config.user_name,
             "date": msg.get("receivedDateTime", ""),
@@ -388,7 +388,7 @@ class GraphEmailFetcher:
             "size": size,
         }
 
-    def _build_email_pk_from_graph(self, msg, from_addr, to_addrs, size):
+    def _build_email_pk(self, msg, from_addr, to_addrs, size):
         """Build a primary key hash from a Graph API message, matching IMAP PK logic."""
         uid = msg.get("id", "")
         mail_box = self.config.user_name
