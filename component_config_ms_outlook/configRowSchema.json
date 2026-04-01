@@ -7,33 +7,48 @@
     "download_attachments"
   ],
   "properties": {
+    "_connection_method": {
+      "type": "string",
+      "options": { "hidden": true },
+      "template": "{{val}}",
+      "watch": {
+        "val": "_metadata_.root.parameters.connection_method"
+      },
+      "propertyOrder": 1
+    },
     "query": {
       "type": "string",
       "title": "IMAP Search Query",
-      "description": "IMAP search query (used with IMAP connection method). Find more information on the syntax in the <a href=\"https://help.keboola.com/components/extractors/communication/email-imap/query-syntax/\">documentation.</a>",
+      "description": "IMAP search query. <strong>Does not apply to Graph API connection.</strong> <a href=\"https://help.keboola.com/components/extractors/communication/email-imap/query-syntax/\">Syntax reference.</a>",
       "default": "ALL",
       "options": {
-        "tooltip": "e.g. (FROM \"email\" SUBJECT \"the subject\" UNSEEN)"
+        "tooltip": "<strong>IMAP search keywords:</strong> <br><code>FROM \"sender@email.com\"</code> <br><code>SUBJECT \"text\"</code> <br><code>UNSEEN</code>, <code>SEEN</code>, <code>ALL</code> <br><code>SINCE 01-Jan-2026</code> <br> <br><strong>Combined example:</strong> <br><code>(FROM \"sender\" SUBJECT \"text\" UNSEEN)</code>"
       },
       "propertyOrder": 100
     },
     "graph_filter": {
       "type": "string",
       "title": "Graph API Filter",
-      "description": "OData $filter expression (used with Graph API connection method). Can be combined with Period from date. Leave empty to fetch all messages. See <a href=\"https://learn.microsoft.com/en-us/graph/api/user-list-messages?view=graph-rest-1.0\">Microsoft Graph API docs</a> for syntax.",
+      "description": "OData $filter for exact matching. Can be combined with Period from date. See <a href=\"https://learn.microsoft.com/en-us/graph/api/user-list-messages?view=graph-rest-1.0\">syntax reference</a>.",
       "default": "",
       "options": {
-        "tooltip": "Supports exact matches with eq, e.g. from/emailAddress/address eq 'someone@example.com' or subject eq 'exact subject' or hasAttachments eq true. Note: contains() on subject/body is NOT supported and will return HTTP 400."
+        "tooltip": "<strong>Exact match examples:</strong> <br><code>from/emailAddress/address eq 'someone@example.com'</code> <br><code>subject eq 'exact subject'</code> <br><code>hasAttachments eq true</code> <br> <br><strong>Note:</strong> <code>contains()</code> on subject/body is NOT supported and will return HTTP 400.",
+        "dependencies": {
+          "_connection_method": "graph_api"
+        }
       },
       "propertyOrder": 105
     },
     "graph_search": {
       "type": "string",
       "title": "Graph API Search (KQL)",
-      "description": "KQL search expression for the Graph API (used with Graph API connection method). <strong>Cannot be combined with Graph API Filter or Period from date.</strong> As per <a href=\"https://learn.microsoft.com/en-us/graph/known-issues#some-limitations-apply-to-query-parameters\">Microsoft Graph known issues</a>: <em>\"Query parameters specified in a request might fail silently. This can be true for unsupported query parameters and for unsupported combinations of query parameters.\"</em> Returns up to 1,000 results.",
+      "description": "KQL keyword search. <strong>Cannot be combined with Graph API Filter or Period from date</strong> (<a href=\"https://learn.microsoft.com/en-us/graph/known-issues#some-limitations-apply-to-query-parameters\">MS limitation</a>). Max 1,000 results.",
       "default": "",
       "options": {
-        "tooltip": "Keyword search: subject:weekly, from:someone@example.com (substring match). Exact phrase: subject:\"my exact phrase\". Date range: received:2026-01-01..2026-01-31. Combine all: from:sender subject:keyword received:2026-01-01..2026-03-18. Note: relative dates (received:this week) do NOT work."
+        "tooltip": "<strong>Keyword search:</strong> <br><code>subject:weekly</code> <br><code>from:someone@example.com</code> (substring match) <br> <br><strong>Exact phrase:</strong> <br><code>subject:\"my exact phrase\"</code> <br> <br><strong>Date range:</strong> <br><code>received:2026-01-01..2026-01-31</code> <br> <br><strong>Combined:</strong> <br><code>from:sender subject:keyword received:2026-01-01..2026-03-18</code> <br> <br><strong>Note:</strong> Relative dates (<code>received:this week</code>) do NOT work.",
+        "dependencies": {
+          "_connection_method": "graph_api"
+        }
       },
       "propertyOrder": 107
     },
@@ -41,14 +56,20 @@
       "type": "string",
       "title": "Mail Folder",
       "default": "",
-      "description": "Folder to get the emails from. Defaults to INBOX. For IMAP: use folder path (e.g. INBOX, Sent Items). For Graph API: use well-known folder names (inbox, sentitems, drafts, deleteditems) or folder display name. If left empty, default Inbox folder is used.",
+      "description": "Defaults to Inbox if empty.",
+      "options": {
+        "tooltip": "<strong>IMAP:</strong> Use folder path, e.g. <code>INBOX</code>, <code>Sent Items</code> <br><strong>Graph API:</strong> Use well-known name (<code>inbox</code>, <code>sentitems</code>, <code>drafts</code>) or display name."
+      },
       "propertyOrder": 110
     },
     "date_since": {
       "type": "string",
       "title": "Period from date (including)",
       "default": "",
-      "description": "Date in YYYY-MM-DD format or dateparser string i.e. 5 days ago, 1 month ago, yesterday, etc. If left empty, all records are downloaded. Cannot be combined with Graph API Search — use <code>received:YYYY-MM-DD..YYYY-MM-DD</code> date syntax within the KQL expression instead.",
+      "description": "Date or relative expression (e.g. 5 days ago, yesterday). If empty, all records are downloaded.",
+      "options": {
+        "tooltip": "<strong>Format:</strong> <code>YYYY-MM-DD</code> or dateparser string (<code>1 month ago</code>, <code>yesterday</code>, etc). <br> <br><strong>Note:</strong> Cannot be combined with Graph API Search — use <code>received:YYYY-MM-DD..YYYY-MM-DD</code> in KQL instead."
+      },
       "propertyOrder": 150
     },
     "download_content": {
