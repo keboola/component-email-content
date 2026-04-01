@@ -66,7 +66,7 @@ class ImapEmailFetcher:
         logging.info(f"Getting messages with query {query} from folder {self._imap_client.folder.get()}")
         msgs = self._imap_client.fetch(criteria=query, mark_seen=mark_seen)
 
-        count = 0
+        count = -1
         results = [output_table]
         try:
             with open(output_table.full_path, "w+", encoding="utf-8") as output:
@@ -81,7 +81,7 @@ class ImapEmailFetcher:
                         results.extend(self._write_message_attachments(msg))
 
                     if count % 10 == 0:
-                        logging.info(f"Processing messages {count} - {count + 10}")
+                        logging.info(f"Processing messages {count + 1} - {count + 10}")
                         logging.info(f"Processed {len(results) - 1} attachments matching the pattern so far.")
         except imaplib.IMAP4.error as e:
             if "SEARCH command error" in str(e):
@@ -98,9 +98,9 @@ class ImapEmailFetcher:
                 "https://help.keboola.com/components/extractors/communication/email-imap/query-syntax/"
             ) from e
 
-        logging.info(f"Processed {count} messages in total.")
+        logging.info(f"Processed {count + 1} messages in total.")
         logging.info(f"Processed {len(results) - 1} attachments matching the pattern in total.")
-        if count == 0:
+        if count == -1:
             logging.warning("No messages matched the specified filter")
 
         return results
@@ -119,9 +119,11 @@ class ImapEmailFetcher:
         try:
             self._imap_client = MailBox(self.config.host, self.config.port).xoauth2(self.config.user_name, access_token)
         except imaplib.IMAP4.error as e:
-            raise e
+            raise UserException(
+                f"IMAP OAuth login failed for '{self.config.user_name}' on '{self.config.host}': {e}"
+            ) from e
         except socket.gaierror as e:
-            raise e
+            raise UserException(f"Failed to connect to IMAP server '{self.config.host}:{self.config.port}': {e}") from e
 
         imap_folder = self.config.imap_folder or "INBOX"
         self._set_client_inbox(imap_folder)
