@@ -5,9 +5,9 @@ import json
 import logging
 import re
 import socket
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from imap_tools import MailBox, MailMessage, MailboxLoginError, MailboxFolderSelectError  # type: ignore[attr-defined]
+from imap_tools import MailBox, MailboxFolderSelectError, MailboxLoginError, MailMessage  # type: ignore[attr-defined]
 from keboola.component.dao import FileDefinition
 from keboola.component.exceptions import UserException
 from keboola.utils import header_normalizer
@@ -173,7 +173,7 @@ class ImapEmailFetcher:
 
         return attachments
 
-    def _write_message_attachments(self, msg: MailMessage) -> List[FileDefinition]:
+    def _write_message_attachments(self, msg: MailMessage) -> list[FileDefinition]:
         """Write IMAP message attachments to files."""
         attachments = self._filter_attachments_by_pattern(msg)
 

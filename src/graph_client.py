@@ -4,7 +4,7 @@ import hashlib
 import json
 import logging
 import re
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import requests
 from keboola.component.dao import FileDefinition
@@ -49,7 +49,7 @@ class GraphEmailFetcher:
         """
         self.component = component
         self.config = config
-        self._graph_session: Optional[requests.Session] = None
+        self._graph_session: requests.Session | None = None
 
     def fetch(self, output_table, download_content, download_attachments, mark_seen):
         """
@@ -206,7 +206,7 @@ class GraphEmailFetcher:
         response = self._graph_request("GET", url, params=params)
         return response.json().get("value", [])
 
-    def _write_graph_attachments(self, message_id, msg_detail, attachments) -> List[FileDefinition]:
+    def _write_graph_attachments(self, message_id, msg_detail, attachments) -> list[FileDefinition]:
         """Download and write Graph API attachments, filtered by pattern."""
         from_addr, to_addrs, _, _, size = self._extract_message_fields(msg_detail)
         pattern = self.config.attachment_pattern

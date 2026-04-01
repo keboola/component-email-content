@@ -2,14 +2,14 @@ import json
 import os
 import unittest
 from unittest import mock
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, PropertyMock, patch
 
 from freezegun import freeze_time
 from keboola.component.exceptions import UserException
 
 from component import (
-    Component,
     RESULT_COLUMNS,
+    Component,
 )
 from configuration import CONNECTION_METHOD_GRAPH, CONNECTION_METHOD_IMAP, Configuration
 from graph_client import GraphEmailFetcher
