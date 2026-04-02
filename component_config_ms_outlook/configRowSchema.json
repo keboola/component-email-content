@@ -22,7 +22,7 @@
       "description": "IMAP search query. <strong>Does not apply to Graph API connection.</strong> <a href=\"https://help.keboola.com/components/extractors/communication/email-imap/query-syntax/\">Syntax reference.</a>",
       "default": "ALL",
       "options": {
-        "tooltip": "<strong>IMAP search keywords:</strong> <br><code>FROM \"sender@email.com\"</code> <br><code>SUBJECT \"text\"</code> <br><code>UNSEEN</code>, <code>SEEN</code>, <code>ALL</code> <br><code>SINCE 01-Jan-2026</code> <br> <br><strong>Combined example:</strong> <br><code>(FROM \"sender\" SUBJECT \"text\" UNSEEN)</code>"
+        "tooltip": "**IMAP search keywords:**\n`FROM\u00a0\"sender@email.com\"`\n`SUBJECT\u00a0\"text\"`\n`UNSEEN`, `SEEN`, `ALL`\n`SINCE\u00a001-Jan-2026`\n\n**Combined example:**\n`(FROM\u00a0\"sender\"\u00a0SUBJECT\u00a0\"text\"\u00a0UNSEEN)`"
       },
       "propertyOrder": 100
     },
@@ -32,7 +32,7 @@
       "description": "OData $filter for exact matching. Can be combined with Period from date. See <a href=\"https://learn.microsoft.com/en-us/graph/api/user-list-messages?view=graph-rest-1.0\">syntax reference</a>.",
       "default": "",
       "options": {
-        "tooltip": "<strong>Exact match examples:</strong> <br><code>from/emailAddress/address eq 'someone@example.com'</code> <br><code>subject eq 'exact subject'</code> <br><code>hasAttachments eq true</code> <br> <br><strong>Note:</strong> <code>contains()</code> on subject/body is NOT supported and will return HTTP 400.",
+        "tooltip": "**Exact match examples:**\n`from/emailAddress/address\u00a0eq\u00a0'someone@example.com'`\n`subject\u00a0eq\u00a0'exact\u00a0subject'`\n`hasAttachments\u00a0eq\u00a0true`\n\n**Note:** `contains()` on subject/body is NOT supported and will return HTTP 400.",
         "dependencies": {
           "_connection_method": "graph_api"
         }
@@ -45,7 +45,7 @@
       "description": "KQL keyword search. <strong>Cannot be combined with Graph API Filter or Period from date</strong> (<a href=\"https://learn.microsoft.com/en-us/graph/known-issues#some-limitations-apply-to-query-parameters\">MS limitation</a>). Max 1,000 results.",
       "default": "",
       "options": {
-        "tooltip": "<strong>Keyword search:</strong> <br><code>subject:weekly</code> <br><code>from:someone@example.com</code> (substring match) <br> <br><strong>Exact phrase:</strong> <br><code>subject:\"my exact phrase\"</code> <br> <br><strong>Date range:</strong> <br><code>received:2026-01-01..2026-01-31</code> <br> <br><strong>Combined:</strong> <br><code>from:sender subject:keyword received:2026-01-01..2026-03-18</code> <br> <br><strong>Note:</strong> Relative dates (<code>received:this week</code>) do NOT work.",
+        "tooltip": "**Keyword search:**\n`subject:weekly`\n`from:someone@example.com` (substring match)\n\n**Exact phrase:**\n`subject:\"my\u00a0exact\u00a0phrase\"`\n\n**Date range:**\n`received:2026-01-01..2026-01-31`\n\n**Combined:**\n`from:sender\u00a0subject:keyword\u00a0received:2026-01-01..2026-03-18`\n\n**Note:** Relative dates (`received:this\u00a0week`) do NOT work.",
         "dependencies": {
           "_connection_method": "graph_api"
         }
@@ -58,7 +58,7 @@
       "default": "",
       "description": "Defaults to Inbox if empty.",
       "options": {
-        "tooltip": "<strong>IMAP:</strong> Use folder path, e.g. <code>INBOX</code>, <code>Sent Items</code> <br><strong>Graph API:</strong> Use well-known name (<code>inbox</code>, <code>sentitems</code>, <code>drafts</code>) or display name."
+        "tooltip": "**IMAP:** Use folder path, e.g. `INBOX`, `Sent\u00a0Items`\n**Graph API:** Use well-known name (`inbox`, `sentitems`, `drafts`) or display name."
       },
       "propertyOrder": 110
     },
@@ -68,7 +68,7 @@
       "default": "",
       "description": "Date or relative expression (e.g. 5 days ago, yesterday). If empty, all records are downloaded.",
       "options": {
-        "tooltip": "<strong>Format:</strong> <code>YYYY-MM-DD</code> or dateparser string (<code>1 month ago</code>, <code>yesterday</code>, etc). <br> <br><strong>Note:</strong> Cannot be combined with Graph API Search — use <code>received:YYYY-MM-DD..YYYY-MM-DD</code> in KQL instead."
+        "tooltip": "**Format:** `YYYY-MM-DD` or dateparser string (`1\u00a0month\u00a0ago`, `yesterday`, etc).\n\n**Note:** Cannot be combined with Graph API Search \u2013 use `received:YYYY-MM-DD..YYYY-MM-DD` in KQL instead."
       },
       "propertyOrder": 150
     },
