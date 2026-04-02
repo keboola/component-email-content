@@ -1,0 +1,1 @@
+https://github.com/keboola/component-email-content/blob/main/LICENSE.md

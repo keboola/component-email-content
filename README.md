@@ -11,6 +11,7 @@ This component allows you to extract email body and other metadata using IMAP pr
 
 # Functionality notes
 
+NOTE: The default authority https://login.microsoftonline.com/common can be overwritten by authority parameter in image_parameters.
 
 # Prerequisites
 
@@ -46,11 +47,15 @@ please set the `imap_folder` configuration parameter.
 
 ## Supported parameters:
 
- - `#password` --  not needed for kds-team.ex-ms-outlook-email-content
- - `user_name` -- login
- - `host` -- IMAP HOST
- - `query` -- Query string to filter emails. E.g. `(FROM "email" SUBJECT "the subject" UNSEEN)`, More information on keywords [here](docs/imap-search.md)
- - `imap_folder` -- Folder to get the emails from. Defaults to the root folder `INBOX`. For example a label name in GMAIL = folder.
+ - `connection_method` -- `imap` (default) or `graph_api` (MS Outlook variant only)
+ - `#password` -- IMAP password; not needed for `graph_api` connection method
+ - `user_name` -- login / email address
+ - `host` -- IMAP host (IMAP only)
+ - `query` -- IMAP search query. E.g. `(FROM "email" SUBJECT "the subject" UNSEEN)`. More information [here](docs/imap-search.md). IMAP only.
+ - `graph_filter` -- OData `$filter` expression for Graph API exact matching. Can be combined with `date_since`. Graph API only.
+ - `graph_search` -- KQL search expression for Graph API keyword/partial matching. Cannot be combined with `graph_filter` or `date_since`. Graph API only.
+ - `imap_folder` -- Folder to get the emails from. Defaults to `INBOX`. For IMAP: folder path. For Graph API: well-known name (inbox, sentitems, etc.) or display name.
+ - `date_since` -- Date in YYYY-MM-DD format or dateparser string (e.g. `5 days ago`). Cannot be combined with `graph_search`.
  - `download_content` -- (boolean) if true, content of the email will be downloaded into the `out/tables/emails.csv` table
  - `mark_seen` -- (boolean) When set to true, emails that have been extracted will be marked as seen in the inbox.
  - `download_attachments` -- (boolean) if true, attachments of the email will be downloaded into `out/files/` folder, prefixed by generated email `pk`.
@@ -59,11 +64,48 @@ please set the `imap_folder` configuration parameter.
  
  
 
-### query
+### query (IMAP only)
 
-Query string to filter emails. E.g. `(FROM "email" SUBJECT "the subject" UNSEEN)`
+IMAP search query. E.g. `(FROM "email" SUBJECT "the subject" UNSEEN)`
 
 More information on keywords [here](docs/imap-search.md)
+
+### graph_filter (Graph API only)
+
+OData `$filter` expression for exact matching. Can be combined with `date_since`.
+
+| Need | Example |
+|---|---|
+| Exact sender | `from/emailAddress/address eq 'someone@example.com'` |
+| Exact subject | `subject eq 'Exact Subject Line'` |
+| Has attachments | `hasAttachments eq true` |
+| Combined | `from/emailAddress/address eq 'x@y.com' and subject eq 'text'` |
+
+Note: `contains()` on subject/body is not supported by the messages endpoint and returns HTTP 400.
+
+### graph_search (Graph API only)
+
+KQL search expression for keyword and partial matching. **Cannot be combined with `graph_filter` or `date_since`** — this is a [Microsoft Graph API limitation](https://learn.microsoft.com/en-us/graph/known-issues#some-limitations-apply-to-query-parameters). Returns up to 1,000 results.
+
+| Need | Example | Notes |
+|---|---|---|
+| Subject keyword | `subject:weekly` | substring match |
+| Subject exact phrase | `subject:"exact multi-word phrase"` | use double quotes |
+| Sender full or partial | `from:someone@example.com` or `from:MSSecurity` | substring match |
+| Date exact | `received:2026-03-17` | single day |
+| Date range | `received:2026-01-01..2026-01-31` | inclusive, `..` syntax only |
+| All combined | `from:sender subject:keyword received:2026-01-01..2026-03-18` | space-separated = AND |
+
+Note: relative date keywords (`received:this week`, `received:today`) are not supported on the messages endpoint and are treated as free-text.
+
+### Choosing the right filter field
+
+| Use case | Field | Combinable with `date_since`? |
+|---|---|---|
+| Exact sender / exact subject | `graph_filter` | Yes |
+| Keyword / partial matching | `graph_search` | No — use `received:` in KQL instead |
+| Keyword + date range | `graph_search` with `received:YYYY-MM-DD..YYYY-MM-DD` | N/A (date is in KQL) |
+| Date only | `date_since` | N/A |
 
 ## Example:
 

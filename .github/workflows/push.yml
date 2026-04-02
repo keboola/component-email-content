@@ -1,17 +1,17 @@
 name: Keboola Component Build & Deploy Pipeline
 on:
   push:
-    branches:
-      - 'feature/*'
-      - 'bug/*'
+    branches-ignore:
+      - main
     tags:
-      - '*' # Skip the workflow on the main branch without tags
+      - "*"  # Skip the workflow on the main branch without tags
 
 concurrency: ci-${{ github.ref }} # to avoid tag collisions in the ECR
 env:
   # repository variables:
-  KBC_DEVELOPERPORTAL_APP: "kds-team.ex-email-content" # replace with your component id
-  KBC_DEVELOPERPORTAL_VENDOR: "kds-team" # replace with your vendor
+  KBC_DEVELOPERPORTAL_APP: "kds-team.ex-email-content"  # Docker image/artifact name for build/test jobs
+  KBC_DEVELOPERPORTAL_APP_MATRIX: '["kds-team.ex-email-content", "kds-team.ex-ms-outlook-email-content"]'  # JSON array, decoded later on
+  KBC_DEVELOPERPORTAL_VENDOR: "kds-team"
   DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
   KBC_DEVELOPERPORTAL_USERNAME: "kds-team+github"
 
@@ -32,6 +32,7 @@ jobs:
       is_semantic_tag: ${{ steps.tag.outputs.is_semantic_tag }}
       is_default_branch: ${{ steps.default_branch.outputs.is_default_branch }}
       is_deploy_ready: ${{ steps.deploy_ready.outputs.is_deploy_ready }}
+      app_ids: ${{ env.KBC_DEVELOPERPORTAL_APP_MATRIX }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -64,8 +65,13 @@ jobs:
       - name: Set image tag
         id: tag
         run: |
-          TAG="${GITHUB_REF##*/}"
-          IS_SEMANTIC_TAG=$(echo "$TAG" | grep -q '^v\?[0-9]\+\.[0-9]\+\.[0-9]\+$' && echo true || echo false)
+          REF="${GITHUB_REF##*/}"
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG="$REF"
+          else
+            TAG="$REF-${{ github.run_number }}"
+          fi
+          IS_SEMANTIC_TAG=$(echo "$REF" | grep -q '^[0-9]\+\.[0-9]\+\.[0-9]\+$' && echo true || echo false)
           echo "is_semantic_tag=$IS_SEMANTIC_TAG" | tee -a $GITHUB_OUTPUT
           echo "app_image_tag=$TAG" | tee -a $GITHUB_OUTPUT
 
@@ -112,7 +118,6 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-latest
     needs:
-      - push_event_info
       - build
     steps:
       - name: Set up Docker Buildx
@@ -128,9 +133,9 @@ jobs:
         run: |
           docker load --input /tmp/${{ env.KBC_DEVELOPERPORTAL_APP }}.tar
           docker image ls -a
-          docker run ${{ env.KBC_DEVELOPERPORTAL_APP }}:latest flake8 . --config=flake8.cfg
+          docker run ${{ env.KBC_DEVELOPERPORTAL_APP }}:latest ruff check .
           echo "Running unit-tests..."
-          docker run ${{ env.KBC_DEVELOPERPORTAL_APP }}:latest python -m unittest discover
+          docker run ${{ env.KBC_DEVELOPERPORTAL_APP }}:latest python -m pytest
 
   tests-kbc:
     name: Run KBC Tests
@@ -162,6 +167,9 @@ jobs:
       - tests-kbc
     env:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    strategy:
+      matrix:
+        app: ${{ fromJson(needs.push_event_info.outputs.app_ids) }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -185,7 +193,7 @@ jobs:
         uses: keboola/action-push-to-ecr@master
         with:
           vendor: ${{ env.KBC_DEVELOPERPORTAL_VENDOR }}
-          app_id: ${{ env.KBC_DEVELOPERPORTAL_APP }}
+          app_id: ${{ matrix.app }}
           username: ${{ env.KBC_DEVELOPERPORTAL_USERNAME }}
           password: ${{ secrets.KBC_DEVELOPERPORTAL_PASSWORD }}
           tag: ${{ needs.push_event_info.outputs.app_image_tag }}
@@ -198,16 +206,18 @@ jobs:
       KBC_DEVELOPERPORTAL_PASSWORD: ${{ secrets.KBC_DEVELOPERPORTAL_PASSWORD }}
     needs:
       - push_event_info
-      - build
       - push
     if: needs.push_event_info.outputs.is_deploy_ready == 'true'
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: ${{ fromJson(needs.push_event_info.outputs.app_ids) }}
     steps:
       - name: Set Developer Portal Tag
         uses: keboola/action-set-tag-developer-portal@master
         with:
           vendor: ${{ env.KBC_DEVELOPERPORTAL_VENDOR }}
-          app_id: ${{ env.KBC_DEVELOPERPORTAL_APP }}
+          app_id: ${{ matrix.app }}
           username: ${{ env.KBC_DEVELOPERPORTAL_USERNAME }}
           password: ${{ secrets.KBC_DEVELOPERPORTAL_PASSWORD }}
           tag: ${{ needs.push_event_info.outputs.app_image_tag }}
@@ -218,15 +228,19 @@ jobs:
       KBC_DEVELOPERPORTAL_PASSWORD: ${{ secrets.KBC_DEVELOPERPORTAL_PASSWORD }}
     needs:
       - push_event_info
-      - build
       - push
     runs-on: ubuntu-latest
     if: needs.push_event_info.outputs.is_deploy_ready == 'true'
+    strategy:
+      matrix:
+        app: ${{ fromJson(needs.push_event_info.outputs.app_ids) }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Update developer portal properties
+        env:
+          KBC_DEVELOPERPORTAL_APP: ${{ matrix.app }}
         run: |
           chmod +x scripts/developer_portal/*.sh
           scripts/developer_portal/update_properties.sh

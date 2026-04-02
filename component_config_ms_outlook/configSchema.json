@@ -1,12 +1,28 @@
 {
   "type": "object",
-  "title": "IMAP Settings",
+  "title": "Connection Settings",
   "required": [
     "user_name",
-    "host",
-    "port"
+    "connection_method"
   ],
   "properties": {
+    "connection_method": {
+      "type": "string",
+      "title": "Connection Method",
+      "enum": [
+        "imap",
+        "graph_api"
+      ],
+      "options": {
+        "enum_titles": [
+          "IMAP (default)",
+          "Microsoft Graph API"
+        ]
+      },
+      "default": "imap",
+      "description": "IMAP connects via traditional IMAP protocol. Graph API uses Microsoft 365 REST API (use when IMAP is disabled on your tenant).",
+      "propertyOrder": 50
+    },
     "user_name": {
       "type": "string",
       "title": "Email Address",
@@ -15,12 +31,23 @@
     "host": {
       "type": "string",
       "title": "IMAP Host",
+      "description": "IMAP server hostname, e.g. outlook.office365.com",
+      "options": {
+        "dependencies": {
+          "connection_method": "imap"
+        }
+      },
       "propertyOrder": 300
     },
     "port": {
       "type": "number",
       "title": "IMAP Port",
       "default": 993,
+      "options": {
+        "dependencies": {
+          "connection_method": "imap"
+        }
+      },
       "propertyOrder": 400
     }
   }
