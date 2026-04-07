@@ -8,6 +8,21 @@ if [ -z "$KBC_DEVELOPERPORTAL_APP" ]; then
     exit 1
 fi
 
+# Determine app-specific config directory (if any)
+case "$KBC_DEVELOPERPORTAL_APP" in
+  kds-team.ex-ms-outlook-email-content) CONFIG_DIR="component_config_ms_outlook" ;;
+esac
+
+# Resolve config file: check app-specific dir first, fall back to component_config
+resolve_config_file() {
+    local filename="$1"
+    if [ -n "$CONFIG_DIR" ] && [ -f "$CONFIG_DIR/$filename" ]; then
+        echo "$CONFIG_DIR/$filename"
+    elif [ -f "component_config/$filename" ]; then
+        echo "component_config/$filename"
+    fi
+}
+
 # Pull the latest version of the developer portal CLI Docker image
 docker pull quay.io/keboola/developer-portal-cli-v2:latest
 
@@ -42,20 +57,19 @@ update_property() {
 
 app_id="$KBC_DEVELOPERPORTAL_APP"
 
-update_property "$app_id" "isDeployReady" "component_config/isDeployReady.md"
-update_property "$app_id" "longDescription" "component_config/component_long_description.md"
-update_property "$app_id" "configurationSchema" "component_config/configSchema.json"
-update_property "$app_id" "configurationRowSchema" "component_config/configRowSchema.json"
-update_property "$app_id" "configurationDescription" "component_config/configuration_description.md"
-update_property "$app_id" "shortDescription" "component_config/component_short_description.md"
-update_property "$app_id" "logger" "component_config/logger"
-update_property "$app_id" "loggerConfiguration" "component_config/loggerConfiguration.json"
-update_property "$app_id" "licenseUrl" "component_config/licenseUrl.md"
-update_property "$app_id" "documentationUrl" "component_config/documentationUrl.md"
-update_property "$app_id" "sourceCodeUrl" "component_config/sourceCodeUrl.md"
-update_property "$app_id" "uiOptions" "component_config/uiOptions.md"
+update_property "$app_id" "isDeployReady" "$(resolve_config_file isDeployReady.md)"
+update_property "$app_id" "longDescription" "$(resolve_config_file component_long_description.md)"
+update_property "$app_id" "configurationSchema" "$(resolve_config_file configSchema.json)"
+update_property "$app_id" "configurationRowSchema" "$(resolve_config_file configRowSchema.json)"
+update_property "$app_id" "configurationDescription" "$(resolve_config_file configuration_description.md)"
+update_property "$app_id" "shortDescription" "$(resolve_config_file component_short_description.md)"
+update_property "$app_id" "logger" "$(resolve_config_file logger)"
+update_property "$app_id" "loggerConfiguration" "$(resolve_config_file loggerConfiguration.json)"
+update_property "$app_id" "licenseUrl" "$(resolve_config_file licenseUrl.md)"
+update_property "$app_id" "documentationUrl" "$(resolve_config_file documentationUrl.md)"
+update_property "$app_id" "sourceCodeUrl" "$(resolve_config_file sourceCodeUrl.md)"
+update_property "$app_id" "uiOptions" "$(resolve_config_file uiOptions.md)"
 
 # Update the actions.md file
 source "$(dirname "$0")/fn_actions_md_update.sh"
-# update_property actions
-update_property "$app_id" "actions" "component_config/actions.md"
+update_property "$app_id" "actions" "$(resolve_config_file actions.md)"

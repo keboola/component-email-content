@@ -3,7 +3,7 @@
 # Set the path to the Python script file
 PYTHON_FILE="src/component.py"
 # Set the path to the Markdown file containing actions
-MD_FILE="component_config/actions.md"
+MD_FILE="${CONFIG_DIR:-component_config}/actions.md"
 
 # Check if the file exists before creating it
 if [ ! -e "$MD_FILE" ]; then
